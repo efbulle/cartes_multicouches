@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          cache-dependency-glob: uv.lock
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Install Chromium for smoke tests
+        run: uv run playwright install --with-deps chromium
+
+      - name: Run tests
+        env:
+          CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY: ${{ secrets.CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY }}
+        run: uv run pytest -ra
+
+      - name: Build GitHub Pages page
+        env:
+          CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY: ${{ secrets.CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY }}
+        run: uv run python examples/example_gares.py
+
+      - name: Build package
+        run: uv build

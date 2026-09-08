@@ -1,0 +1,55 @@
+[project]
+name = "cartes-multicouches"
+version = "0.3.0"
+description = "Cartes Bokeh interactives multi-couches à partir de GeoDataFrame"
+license = "MIT"
+license-files = ["LICENSE"]
+readme = "README.md"
+authors = [
+    { name = "efbulle", email = "emmanuel.favrebulle@gmail.com" }
+]
+requires-python = ">=3.13"
+keywords = ["bokeh", "geopandas", "cartography", "geospatial", "interactive-map"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "bokeh>=3.10,<4",
+    "geopandas>=1.1.3",
+    "shapely>=2.1.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/efbulle/cartes_multicouches"
+Repository = "https://github.com/efbulle/cartes_multicouches"
+Issues = "https://github.com/efbulle/cartes_multicouches/issues"
+
+[build-system]
+requires = ["uv_build>=0.11.33,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pillow>=12.3.0",
+    "platformdirs>=4.11.0",
+    "pytest>=9.1.1",
+    "pytest-playwright>=0.9.0",
+    "pre-commit>=4.5.0",
+    "requests>=2.34.2",
+    "ruff>=0.16.5",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
