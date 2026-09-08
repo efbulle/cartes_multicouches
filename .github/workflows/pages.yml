@@ -39,6 +39,9 @@ jobs:
           CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY: ${{ secrets.CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY }}
         run: uv run python examples/example_gares.py
 
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
