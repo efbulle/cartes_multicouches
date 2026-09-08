@@ -42,10 +42,5 @@ jobs:
           CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY: ${{ secrets.CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY }}
         run: uv run pytest -ra
 
-      - name: Build GitHub Pages page
-        env:
-          CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY: ${{ secrets.CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY }}
-        run: uv run python examples/example_gares.py
-
       - name: Build package
         run: uv build
