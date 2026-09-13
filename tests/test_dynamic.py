@@ -894,6 +894,24 @@ def test_attribution_uses_personal_toml_config(tmp_path, monkeypatch) -> None:
 
 def test_attribution_uses_defaults_without_personal_config(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("APPDATA", str(tmp_path))
+    monkeypatch.setattr(dynamic_module, "_load_tile_provider_key", lambda _override=None: "secret")
+    points = gpd.GeoDataFrame(
+        {"name": ["A"]},
+        geometry=[Point(2.35, 48.85)],
+        crs="EPSG:4326",
+    )
+
+    carte = CarteDynMulti([LayerConfig(name="Points", data=points)])
+
+    assert carte.attribution_config == AttributionConfig()
+
+
+def test_cartodb_provider_warns_without_api_key(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("APPDATA", str(tmp_path))
+    monkeypatch.delenv(
+        dynamic_module._TILE_PROVIDER_API_KEY_ENV_VAR,
+        raising=False,
+    )
     points = gpd.GeoDataFrame(
         {"name": ["A"]},
         geometry=[Point(2.35, 48.85)],
@@ -901,9 +919,7 @@ def test_attribution_uses_defaults_without_personal_config(tmp_path, monkeypatch
     )
 
     with pytest.warns(UserWarning, match=r"CartoDB tiles now require an API key"):
-        carte = CarteDynMulti([LayerConfig(name="Points", data=points)])
-
-    assert carte.attribution_config == AttributionConfig()
+        CarteDynMulti([LayerConfig(name="Points", data=points)])
 
 
 def test_load_tile_provider_key_uses_environment_override(monkeypatch: pytest.MonkeyPatch) -> None:

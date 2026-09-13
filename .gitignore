@@ -21,3 +21,9 @@ examples/output/
 *.swp
 Thumbs.db
 .DS_Store
+
+# Couverture de tests
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml

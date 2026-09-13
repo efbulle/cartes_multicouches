@@ -1,5 +1,9 @@
 # `cartes_multicouches` — Référence API
 
+[![CI](https://github.com/efbulle/cartes_multicouches/actions/workflows/ci.yml/badge.svg)](https://github.com/efbulle/cartes_multicouches/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.13%20%7C%203.14-blue.svg)](pyproject.toml)
+
 Génération de cartes Bokeh interactives multi-couches (points, lignes) à partir
 de `GeoDataFrame`, avec filtres, tables liées, indicateurs, annotations et
 export CSV, le tout en HTML autonome.
@@ -654,6 +658,12 @@ uv run pre-commit run pytest --hook-stage pre-push --all-files
 
 ```bash
 uv run pytest -v
+```
+
+Avec couverture de code :
+
+```bash
+uv run pytest --cov=cartes_multicouches --cov-report=term-missing
 ```
 
 ### Fichiers

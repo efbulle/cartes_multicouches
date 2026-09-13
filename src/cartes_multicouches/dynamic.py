@@ -1,5 +1,6 @@
 import os
 import re
+import warnings
 import zipfile
 from collections import Counter
 from pathlib import Path
@@ -162,11 +163,21 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
         api_key = _load_tile_provider_key(self.map_config.tile_provider_api_key)
 
         cartodb_provider: TileProvider | None = None
-        if provider_name.upper().startswith("CARTODB") and api_key:
+        if provider_name.upper().startswith("CARTODB"):
             try:
                 cartodb_provider = cast(Any, xyz).query_name(provider_name)
             except ValueError:
                 cartodb_provider = None
+
+        # Avertissement émis nous-mêmes plutôt que de dépendre de celui de
+        # bokeh/xyzservices, dont la présence varie selon les versions.
+        if cartodb_provider is not None and cartodb_provider.requires_token() and not api_key:
+            warnings.warn(
+                "CartoDB tiles now require an API key. Please provide one to continue "
+                "using the tiles. You can request the key at "
+                "https://carto.com/basemaps/apikey/.",
+                stacklevel=2,
+            )
 
         if cartodb_provider is not None and api_key is not None:
             tile_source: str | models.WMTSTileSource | TileProvider = self._provider_with_api_key(
