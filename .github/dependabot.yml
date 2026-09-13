@@ -14,7 +14,6 @@ updates:
           - "*"
     commit-message:
       prefix: "chore(deps)"
-      include: "scope"
 
   - package-ecosystem: "uv"
     directory: "/"
@@ -30,4 +29,14 @@ updates:
           - "*"
     commit-message:
       prefix: "chore(deps)"
-      include: "scope"
+
+  # Hooks pre-commit (.pre-commit-config.yaml)
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(pre-commit)"
+    labels:
+      - "dependencies"
+      - "pre-commit"
