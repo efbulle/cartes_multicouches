@@ -1,0 +1,17 @@
+{#
+Template Jinja2 utilisé pour générer docs/index.html (page publiée sur
+GitHub Pages). Ce fichier est la *source* : il est automatiquement combiné
+par Bokeh avec son template HTML par défaut (bloc "postamble" injecté dans
+le <head>) — ne pas éditer docs/index.html directement, il est régénéré par
+examples/example_gares.py.
+
+Ajoute les balises Open Graph pour que les aperçus de partage (LinkedIn,
+etc.) affichent un titre, une description et une vignette.
+#}
+{% block postamble %}
+<meta property="og:title" content="cartes_multicouches" />
+<meta property="og:description" content="Génération de cartes Bokeh interactives multi-couches (points, lignes) à partir de GeoDataFrame, avec filtres, tables liées, indicateurs, annotations et export CSV, le tout en HTML autonome." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://efbulle.github.io/cartes_multicouches/" />
+<meta property="og:image" content="https://efbulle.github.io/cartes_multicouches/preview.png" />
+{% endblock %}

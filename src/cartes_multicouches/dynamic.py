@@ -12,6 +12,7 @@ from bokeh import io, models
 from bokeh.layouts import row
 from bokeh.plotting import figure
 from bokeh.resources import CDN, Resources, ResourcesMode
+from jinja2 import Template
 from xyzservices import TileProvider
 
 from ._config import load_personal_config
@@ -484,6 +485,7 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
         filepath: str | Path,
         zip: bool = False,
         resources: Resources | ResourcesMode = CDN,
+        template: str | Template | None = None,
     ) -> None:
         path = Path(filepath)
         bokeh_resources = Resources(mode=resources) if isinstance(resources, str) else resources
@@ -492,6 +494,7 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
             str(path),
             resources=bokeh_resources,
             title=self.map_config.title,
+            template=template,
         )
         if zip:
             with zipfile.ZipFile(path.with_suffix(".zip"), "w", zipfile.ZIP_DEFLATED) as zipf:

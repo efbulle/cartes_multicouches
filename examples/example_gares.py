@@ -241,7 +241,8 @@ def build_sample_map(output_path: Path | str = "example_map_gares.html") -> Path
     )
 
     output_path = Path(output_path)
-    carte.save(output_path, resources="inline")
+    og_template = (Path(__file__).parent / "template.html").read_text(encoding="utf-8")
+    carte.save(output_path, resources="inline", template=og_template)
     return output_path
 
 
