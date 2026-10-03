@@ -3,6 +3,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+from bokeh.resources import CDN
 
 try:
     from _data_sources import load_example
@@ -242,7 +243,7 @@ def build_sample_map(output_path: Path | str = "example_map_gares.html") -> Path
 
     output_path = Path(output_path)
     og_template = (Path(__file__).parent / "template.html").read_text(encoding="utf-8")
-    carte.save(output_path, resources="inline", template=og_template)
+    carte.save(output_path, resources=CDN, template=og_template)
     return output_path
 
 
