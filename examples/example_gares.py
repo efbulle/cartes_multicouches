@@ -246,7 +246,7 @@ def build_sample_map(output_path: Path | str = "example_map_gares.html") -> Path
             lines=[
                 (
                     'Données : <a href="https://data.sncf.com/" target="_blank" '
-                    'rel="noopener noreferrer" style="color:#000">SNCF - SNCF Réseau</a> (open data)'
+                    'rel="noopener noreferrer">SNCF - SNCF Réseau</a> (open data)'
                 )
             ],
         ),

@@ -866,11 +866,14 @@ def test_attribution_accepts_mailto_href() -> None:
     )
 
     assert carte.attribution_config.href == "mailto:user@example.com"
-    assert 'href="mailto:user@example.com"' in carte._build_attribution_widget().text
-    assert ">myname</a>" in carte._build_attribution_widget().text
+    assert 'href="mailto:user@example.com"' in carte._signature_html()
+    assert ">myname</a>" in carte._signature_html()
+    assert carte._build_attribution_widget() is None
+    tile_attribution = carte.fig.renderers[0].tile_source.attribution
+    assert tile_attribution.endswith(carte._signature_html())
 
 
-def test_attribution_lines_are_rendered_below_signature() -> None:
+def test_attribution_lines_are_rendered_in_widget() -> None:
     points = gpd.GeoDataFrame(
         {"name": ["A"]},
         geometry=[Point(2.35, 48.85)],
@@ -882,8 +885,9 @@ def test_attribution_lines_are_rendered_below_signature() -> None:
         attribution_config=AttributionConfig(text="myname", lines=["Données : X", "Autre : Y"]),
     )
 
-    text = carte._build_attribution_widget().text
-    assert text.endswith("</a><br>Données : X<br>Autre : Y")
+    widget = carte._build_attribution_widget()
+    assert widget is not None
+    assert widget.text == "Données : X<br>Autre : Y"
 
 
 def test_attribution_uses_personal_toml_config(tmp_path, monkeypatch) -> None:

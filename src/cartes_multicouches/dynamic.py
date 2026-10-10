@@ -235,9 +235,10 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
             tools=["pan", "wheel_zoom", "reset", "save"],
             active_scroll="wheel_zoom",
         )
+        signature = self._signature_html()
         for tile_source in self._resolve_tile_sources():
             if isinstance(tile_source, TileProvider):
-                fig.add_tile(tile_source, retina=True)
+                renderer = fig.add_tile(tile_source, retina=True)
             else:
                 renderer = fig.add_tile(tile_source)
                 if (
@@ -245,6 +246,10 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
                     and tile_source.url == _ESRI_GRAY_REFERENCE_URL
                 ):
                     renderer.level = "annotation"
+            # La signature rejoint la ligne d'attribution des tuiles ; des sources
+            # identiques (ex. Esri) restent fusionnées par Bokeh.
+            base = renderer.tile_source.attribution
+            renderer.tile_source.attribution = f"{base} · {signature}" if base else signature
         fig.toolbar.autohide = True
         fig.axis.visible = False
         fig.grid.visible = False

@@ -44,12 +44,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "build"
 VILLES_PATH = ROOT / "examples" / "data" / "villes.csv"
 SNCF_LINK = (
-    '<a href="https://data.sncf.com/" target="_blank" rel="noopener noreferrer" '
-    'style="color:#000">SNCF - SNCF Réseau</a>'
+    '<a href="https://data.sncf.com/" target="_blank" rel="noopener noreferrer">'
+    "SNCF - SNCF Réseau</a>"
 )
 EXTRAS_LINK = (
     '<a href="https://github.com/nicolaswurtz/extras-opendata-sncf-reseau" target="_blank" '
-    'rel="noopener noreferrer" style="color:#000">extras-opendata-sncf-reseau</a>'
+    'rel="noopener noreferrer">extras-opendata-sncf-reseau</a>'
 )
 ATTRIBUTION = {
     "text": "@efbulle",
@@ -181,6 +181,7 @@ opacity:.95;text-wrap:balance}
 .btn{display:inline-block;padding:.7rem 1.3rem;border-radius:999px;font-weight:600;
 text-decoration:none;border:2px solid #fff;transition:transform .12s,background .12s,color .12s}
 .btn:hover{transform:translateY(-1px)}
+.btn .icon{vertical-align:-.25em;margin-right:.45rem}
 .btn--primary{background:#fff;color:var(--accent-dark)}
 .btn--ghost{color:#fff}
 .btn--ghost:hover{background:rgba(255,255,255,.15)}
@@ -236,12 +237,12 @@ font-size:.85rem;color:var(--muted)}
 <body>
 <header class="hero"><div class="wrap">
 <h1>Des cartes interactives, construites dans votre navigateur</h1>
-<p class="lead">Créez des cartes multi-couches et filtrables à partir de vos données géographiques.
-Générez des pages HTML autonomes, consultables et partageables sans serveur Python.</p>
+<p class="lead">Créez des cartes multi-couches et filtrables à partir de vos données ferroviaires.
+Générez des pages HTML autonomes, consultables et partageables sans serveur.</p>
 <div class="cta">
 <a class="btn btn--primary" href="../index.html">Voir la carte d’exemple</a>
 <a class="btn btn--ghost" href="app.html">Essayer l’application</a>
-<a class="btn btn--ghost" href="https://github.com/efbulle/cartes_multicouches">GitHub</a>
+<a class="btn btn--ghost" href="https://github.com/efbulle/cartes_multicouches"><svg class="icon" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
 </div></div></header>
 
 <main class="wrap">

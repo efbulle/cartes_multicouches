@@ -450,9 +450,9 @@ class AttributionConfig:
     lines: list[str] = field(default_factory=list)
 ```
 
-Petite signature en bas à droite de la carte, cliquable. `lines` ajoute des lignes HTML
-sous la signature (par exemple les sources de données, avec leurs liens), au-dessus de
-l'attribution des tuiles.
+Petite signature cliquable, ajoutée en bas à droite de la carte sur la ligne d'attribution
+des tuiles. `lines` ajoute des lignes HTML (par exemple les sources de données, avec leurs
+liens) juste au-dessus de cette ligne.
 
 Sans `attribution_config` explicite, la bibliothèque charge aussi les préférences
 personnelles dans `%APPDATA%/cartes_multicouches/config.toml`. Si ce fichier est
