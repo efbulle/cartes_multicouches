@@ -10,6 +10,8 @@ wheels/
 
 # Cartes et rendus HTML générés
 examples/output/
+build/
+docs/builder/
 *.html
 !examples/template.html
 

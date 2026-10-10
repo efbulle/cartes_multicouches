@@ -39,6 +39,10 @@ jobs:
           CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY: ${{ secrets.CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY }}
         run: uv run python examples/example_gares.py
 
+      # Sans clé d'API : le builder public refuse de publier un secret.
+      - name: Build builder demo
+        run: uv run python scripts/build_demo.py
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
 

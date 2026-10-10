@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/{{ pyscript_version }}/core.css" />
+    <script type="module" src="https://pyscript.net/releases/{{ pyscript_version }}/core.js"></script>
+    <style>
+        :root {
+            --bg: #eef1f6;
+            --panel: #ffffff;
+            --border: #d7dee6;
+            --text: #1e2530;
+            --text-muted: #6b7686;
+            --accent: #2d5ba3;
+            --accent-dark: #0d3f8f;
+            --accent-soft: #e4edf9;
+            --radius: 6px;
+            --font-ui: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: var(--font-ui);
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        /* --- Barre d'outils --- */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 24px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+        }
+
+        .toolbar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .toolbar-group--actions {
+            flex-direction: row;
+            align-items: center;
+            margin-left: auto;
+            gap: 10px;
+        }
+
+        .toolbar-group__label {
+            font-size: 0.7em;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .toolbar-group__row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #loading {
+            outline: none;
+            border: none;
+            background: transparent;
+            font-family: var(--font-ui);
+        }
+
+        select {
+            padding: 5px 8px;
+            font-family: var(--font-ui);
+            font-size: 0.9em;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            color: var(--text);
+        }
+
+        select:focus-visible,
+        .btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        #loadxl {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+        }
+
+        /* --- Boutons --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-ui);
+            font-size: 0.9em;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: var(--radius);
+            border: 1px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+        }
+
+        .btn svg {
+            width: 14px;
+            height: 14px;
+            flex: none;
+        }
+
+        .btn--file {
+            background: var(--panel);
+            border-color: var(--border);
+            color: var(--text);
+        }
+
+        .btn--file:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn--primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn--primary:hover:not(:disabled) {
+            background: var(--accent-dark);
+        }
+
+        .btn--secondary {
+            background: var(--panel);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn--secondary:hover:not(:disabled) {
+            background: var(--accent-soft);
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+
+        #filename-container {
+            font-family: var(--font-mono);
+            font-size: 0.8em;
+            color: var(--text);
+        }
+
+        #filename-container:empty::before {
+            content: "Aucun fichier chargé";
+            font-family: var(--font-ui);
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .grow {
+            flex-grow: 1;
+            padding: 0;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        /* --- Sélecteurs de paramètres (générés par gen_carte) --- */
+        .selecteur-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        label.selecteur {
+            font-size: 0.8em;
+            color: var(--text-muted);
+        }
+
+        select.selecteur {
+            min-width: 140px;
+        }
+    </style>
+    <script type="module">
+        const loading = document.getElementById('loading');
+        addEventListener('py:all-done', () => loading.close());
+        loading.showModal();
+    </script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-{{ bokeh_version }}.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-{{ bokeh_version }}.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-{{ bokeh_version }}.min.js"></script>
+</head>
+
+<body>
+    <py-config>
+        {
+        "packages": ["micropip", "xyzservices=={{ xyzservices_version }}", "pandas", "geopandas", "shapely", "bokeh=={{ bokeh_version }}", "openpyxl"]
+        }
+    </py-config>
+    <dialog id="loading">
+        <h1>Initialisation...</h1>
+    </dialog>
+    <header class="toolbar">
+        <div class="toolbar-group">
+            <span class="toolbar-group__label">Fichier</span>
+            <div class="toolbar-group__row">
+                <label id="file-input-label" for="loadxl" class="btn btn--file" title="Charge un fichier au format xlsx">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Charger un fichier Excel
+                </label>
+                <input type="file" id="loadxl" name="loadxl" accept=".xlsx" />
+                <span id="filename-container"></span>
+            </div>
+        </div>
+        <div class="toolbar-group">
+            <span class="toolbar-group__label">Paramètres</span>
+            <div class="toolbar-group__row">
+                {{ selecteurs }}
+            </div>
+        </div>
+        <div class="toolbar-group toolbar-group--actions">
+            <button id="cstr_carte" class="btn btn--primary" title="Construit et affiche la carte" disabled>Construire la carte</button>
+            <button id="exporte" class="btn btn--secondary" title="Sauvegarde sous forme de fichier html" disabled>Sauvegarder</button>
+        </div>
+    </header>
+    <div id="myplot" class="grow">
+
+    </div>
+    <script type="py">
+import base64
+import gzip
+import json
+from io import BytesIO
+
+import micropip
+from js import JSON, Bokeh
+from pyodide.http import pyfetch
+from pyscript import display, document, when, window
+
+import geopandas as gpd
+import pandas as pd
+from bokeh import models
+from bokeh.core.types import ID
+from bokeh.embed import file_html, json_item
+from bokeh.layouts import column, row
+from bokeh.plotting import figure
+from bokeh.resources import CDN
+import bokeh
+
+
+async def asset_bytes(spec):
+    """Octets d'un asset : inline (base64) ou téléchargé (pyfetch)."""
+    if "b64" in spec:
+        return base64.b64decode(spec["b64"])
+    response = await pyfetch(spec["url"])
+    if not response.ok:
+        raise RuntimeError(f"Chargement impossible : {spec['url']} ({response.status})")
+    return await response.bytes()
+
+
+manifest = json.loads(document.getElementById("assets-manifest").textContent)
+
+# --- Installation du wheel cartes_multicouches ---
+wheel_path = f"/{manifest['wheel']['name']}"
+with open(wheel_path, "wb") as f:
+    f.write(await asset_bytes(manifest["wheel"]))
+await micropip.install(f"emfs://{wheel_path}", reinstall=True)
+
+from cartes_multicouches import (
+    AnnotationConfig,
+    AttributionConfig,
+    CarteDynMulti,
+    GlobalDataConfig,
+    InteractionConfig,
+    LayerConfig,
+    LayerIndicator,
+    LegendConfig,
+    LegendEntry,
+    MapConfig,
+    StyleConfig,
+    carte_une_couche,
+)
+
+# --- Jeux de données : chacun devient une variable globale du même nom ---
+for _name, _spec in manifest["datasets"].items():
+    _payload = json.loads(gzip.decompress(await asset_bytes(_spec)))
+    if _spec["kind"] == "geo":
+        globals()[_name] = gpd.GeoDataFrame.from_features(_payload, crs=_spec["crs"])
+    else:
+        globals()[_name] = pd.DataFrame(_payload)
+
+attribution_config = json.loads(document.getElementById("attribution_config").textContent)
+tile_provider_api_key = {{ api_key_literal }}
+
+nsel = document.querySelectorAll("select.selecteur").length
+
+def clear_plot():
+    div = document.getElementById("myplot")
+    div.innerHTML = ""
+
+
+def clear_errors():
+    error_divs = document.querySelectorAll(".py-error")
+    for div in error_divs:
+        div.innerHTML = ""
+        div.style.display = "none"
+
+
+@when("click", "#loadxl")
+def charge_fichier(event):
+    input_element = document.querySelector("#loadxl")
+    input_element.click()
+    input_element.onchange = lambda e: handle_file(e)
+
+
+def handle_file(event):
+    file = event.target.files.item(0)
+    if file:
+        reader = window.FileReader.new()
+        reader.onload = lambda e: read_file(e.target.result)
+        reader.readAsArrayBuffer(file)
+        document.getElementById("filename-container").textContent = file.name
+    event.target.value = ""
+
+
+
+@when("click", "#cstr_carte")
+def bouton_cstr(event):
+    if "file_data" not in globals():
+        return
+    clear_plot()
+    carte = cstr_carte()
+    p_json = json.dumps(json_item(carte.layout_widget, target=ID("myplot")))
+    Bokeh.embed.embed_item(JSON.parse(p_json))
+
+
+def read_file(data):
+    clear_errors()
+    clear_plot()
+    global file_data
+    file_data = data.to_py()
+    document.getElementById("cstr_carte").disabled = False
+    document.getElementById("exporte").disabled = False
+    with pd.ExcelFile(BytesIO(file_data)) as xl:
+        sheet_names = xl.sheet_names
+    sel = document.querySelector(".sheetname")
+    if sel:
+        while sel.firstChild:
+            sel.removeChild(sel.firstChild)
+        for option in sheet_names:
+            option_element = document.createElement("option")
+            option_element.textContent = option
+            sel.append(option_element)
+        update_xlcols(type("event", (), {"target": sel})())
+
+
+@when("change", ".sheetname")
+def update_xlcols(event):
+    sheet_name = event.target.value
+    with pd.ExcelFile(BytesIO(file_data)) as xl:
+        df = pd.read_excel(xl, sheet_name=sheet_name)
+        cols = df.columns.tolist()
+    selectors = document.querySelectorAll(".xlcols")
+    for sel in selectors:
+        while sel.firstChild:
+            sel.removeChild(sel.firstChild)
+        for col in cols:
+            option_element = document.createElement("option")
+            option_element.textContent = col
+            sel.append(option_element)
+
+def cstr_carte():
+    with pd.ExcelFile(BytesIO(file_data)) as xl:
+        if nsel > 0:
+            args = [document.getElementById(f"sel_{nid}").value for nid in range(nsel)]
+            return mafunc(xl, *args)
+        else:
+            return mafunc(xl)
+
+
+{{ mafunc_code }}
+
+
+@when("click", "#exporte")
+def exporte_carte(event):
+    if "file_data" not in globals():
+        return
+    carte = cstr_carte()
+    html = file_html(carte.layout_widget, CDN, "Carte")
+    blob = window.Blob.new(["\ufeff" + html], {"type": "text/html;charset=utf-8;"})
+    link = document.createElement("a")
+    link.href = window.URL.createObjectURL(blob)
+    link.download = "carte.html"
+    link.target = "_blank"
+    link.style.visibility = "hidden"
+    link.dispatchEvent(window.MouseEvent.new("click"))
+
+
+{{ modules_code }}
+
+document.body.dataset.ready = "1"
+
+</script>
+    <script type="application/json" id="assets-manifest">
+{{ manifest_json }}
+</script>
+    <script type="application/json" id="attribution_config">
+{{ attribution_json }}
+</script>
+</body>
+
+</html>
