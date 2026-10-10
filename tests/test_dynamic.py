@@ -870,6 +870,22 @@ def test_attribution_accepts_mailto_href() -> None:
     assert ">myname</a>" in carte._build_attribution_widget().text
 
 
+def test_attribution_lines_are_rendered_below_signature() -> None:
+    points = gpd.GeoDataFrame(
+        {"name": ["A"]},
+        geometry=[Point(2.35, 48.85)],
+        crs="EPSG:4326",
+    )
+    carte = CarteDynMulti(
+        [LayerConfig(name="Points", data=points)],
+        map_config=MapConfig(title="Test attribution"),
+        attribution_config=AttributionConfig(text="myname", lines=["Données : X", "Autre : Y"]),
+    )
+
+    text = carte._build_attribution_widget().text
+    assert text.endswith("</a><br>Données : X<br>Autre : Y")
+
+
 def test_attribution_uses_personal_toml_config(tmp_path, monkeypatch) -> None:
     config_dir = tmp_path / "cartes_multicouches"
     config_dir.mkdir()

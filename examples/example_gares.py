@@ -241,8 +241,12 @@ def build_sample_map(output_path: Path | str = "example_map_gares.html") -> Path
         data_config=data_config,
         legend_config=legend_config,
         attribution_config=AttributionConfig(
-            text="@efbulle · Données : SNCF / SNCF Réseau (open data)",
-            href="https://data.sncf.com/",
+            text="@efbulle",
+            href="https://github.com/efbulle",
+            lines=[
+                'Données : <a href="https://data.sncf.com/" target="_blank" '
+                'rel="noopener noreferrer" style="color:#000">SNCF - SNCF Réseau</a> (open data)'
+            ],
         ),
     )
 

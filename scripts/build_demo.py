@@ -43,9 +43,18 @@ from cartes_multicouches import (
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "build"
 VILLES_PATH = ROOT / "examples" / "data" / "villes.csv"
+SNCF_LINK = (
+    '<a href="https://data.sncf.com/" target="_blank" rel="noopener noreferrer" '
+    'style="color:#000">SNCF - SNCF Réseau</a>'
+)
+EXTRAS_LINK = (
+    '<a href="https://github.com/nicolaswurtz/extras-opendata-sncf-reseau" target="_blank" '
+    'rel="noopener noreferrer" style="color:#000">extras-opendata-sncf-reseau</a>'
+)
 ATTRIBUTION = {
-    "text": "@efbulle · Données : SNCF / SNCF Réseau (open data), extras-opendata-sncf-reseau (ODbL)",
+    "text": "@efbulle",
     "href": "https://github.com/efbulle",
+    "lines": [f"Données : {SNCF_LINK} (open data), {EXTRAS_LINK} (ODbL)"],
 }
 SECRET_ENV_VARS = ("CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY",)
 
@@ -162,9 +171,10 @@ a{color:var(--accent)}
 /* Hero */
 .hero{background:linear-gradient(135deg,#0d3f8f 0%,#2d5ba3 60%,#4a82cc 100%);color:#fff;
 text-align:center;padding:4rem 1.25rem 8rem}
-.hero h1{margin:0 auto .8rem;max-width:60rem;font-size:clamp(1.8rem,4vw,2.4rem);
-line-height:1.15;text-wrap:balance}
-.hero .lead{margin:0 auto;max-width:56rem;font-size:1.1rem;opacity:.92;text-wrap:balance}
+.hero h1{margin:0 auto .8rem;max-width:60rem;font-size:clamp(1.6rem,3.6vw,2.1rem);
+line-height:1.2;text-wrap:balance}
+.hero .lead{margin:0 auto;max-width:56rem;font-size:clamp(1.05rem,2vw,1.25rem);line-height:1.7;
+opacity:.95;text-wrap:balance}
 .hero .cta{display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem;margin-top:1.6rem}
 
 /* Boutons */
@@ -226,12 +236,11 @@ font-size:.85rem;color:var(--muted)}
 <body>
 <header class="hero"><div class="wrap">
 <h1>Des cartes interactives, construites dans votre navigateur</h1>
-<p class="lead"><strong>cartes_multicouches</strong> assemble des cartes Bokeh multi-couches filtrables.
-Le builder en fait des pages HTML qui transforment un simple fichier Excel de tronçons en carte,
-sans serveur Python.</p>
+<p class="lead">Créez des cartes multi-couches et filtrables à partir de vos données géographiques.
+Générez des pages HTML autonomes, consultables et partageables sans serveur Python.</p>
 <div class="cta">
-<a class="btn btn--primary" href="app.html">Essayer l’application</a>
-<a class="btn btn--ghost" href="../index.html">Voir la carte d’exemple</a>
+<a class="btn btn--primary" href="../index.html">Voir la carte d’exemple</a>
+<a class="btn btn--ghost" href="app.html">Essayer l’application</a>
 <a class="btn btn--ghost" href="https://github.com/efbulle/cartes_multicouches">GitHub</a>
 </div></div></header>
 

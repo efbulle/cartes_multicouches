@@ -57,7 +57,10 @@ __all__ = [
 
 _ESRI_GRAY_BASE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
 _ESRI_GRAY_REFERENCE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
-_ESRI_GRAY_ATTRIBUTION = "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
+_ESRI_GRAY_ATTRIBUTION = (
+    'Tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">'
+    "Esri</a> &mdash; Esri, DeLorme, NAVTEQ"
+)
 _ESRI_GRAY_MAX_ZOOM = 16
 _TILE_PROVIDER_API_KEY_ENV_VAR = "CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY"
 _TILE_URL_PLACEHOLDER_PATTERN = re.compile(r"{([^{}]+)}")

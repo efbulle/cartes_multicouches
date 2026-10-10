@@ -743,12 +743,13 @@ class UIBuilderMixin(_CarteDynContext):
     def _build_attribution_widget(self) -> models.Div:
         """Construit la signature cliquable, y compris pour les liens mailto:."""
         attribution = self.attribution_config
+        signature = (
+            f'<a href="{attribution.href}" target="_blank" '
+            'rel="noopener noreferrer" '
+            f'style="color:#000; text-decoration:none;">{attribution.text}</a>'
+        )
         return models.Div(
-            text=(
-                f'<a href="{attribution.href}" target="_blank" '
-                'rel="noopener noreferrer" '
-                f'style="color:#000; text-decoration:none;">{attribution.text}</a>'
-            ),
+            text="<br>".join([signature, *attribution.lines]),
             styles={
                 "position": "absolute",
                 "bottom": "16px",
@@ -760,6 +761,7 @@ class UIBuilderMixin(_CarteDynContext):
                 "padding": "0 4px",
                 "border-radius": "3px",
                 "pointer-events": "auto",
+                "text-align": "right",
             },
             visible=True,
         )

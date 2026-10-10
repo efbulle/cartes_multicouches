@@ -17,18 +17,26 @@ pip install "git+https://github.com/efbulle/cartes_multicouches#subdirectory=bui
 ```python
 from cartes_builder import Dataset, gen_carte
 
+
 def macarte(xl, feuille, tronloc, attribution_config):
     df = pd.read_excel(xl, sheet_name=feuille)
-    gdf = ajoute_geo(df, tronloc, on="code_ligne", pk_lbls=("pkmd", "pkmf"),
-                     tronloc_pk_lbls=("pkmd", "pkmf"), pk_unit_m=1000.0)
+    gdf = ajoute_geo(
+        df,
+        tronloc,
+        on="code_ligne",
+        pk_lbls=("pkmd", "pkmf"),
+        tronloc_pk_lbls=("pkmd", "pkmf"),
+        pk_unit_m=1000.0,
+    )
     return CarteDynMulti(...)
+
 
 gen_carte(
     macarte,
     "output/carte.html",
     datasets={"tronloc": Dataset("data/tronloc.parquet")},
     select={"Feuille": "xl_sheetnames"},
-    repo_dir="../cartes_multicouches",   # ou wheel_path=...
+    repo_dir="../cartes_multicouches",  # ou wheel_path=...
 )
 ```
 

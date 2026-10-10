@@ -447,9 +447,12 @@ dépendance à un rendu Bokeh caché).
 class AttributionConfig:
     text: str = "@efbulle"
     href: str = "https://github.com/efbulle"
+    lines: list[str] = field(default_factory=list)
 ```
 
-Petite signature en bas à droite de la carte, cliquable.
+Petite signature en bas à droite de la carte, cliquable. `lines` ajoute des lignes HTML
+sous la signature (par exemple les sources de données, avec leurs liens), au-dessus de
+l'attribution des tuiles.
 
 Sans `attribution_config` explicite, la bibliothèque charge aussi les préférences
 personnelles dans `%APPDATA%/cartes_multicouches/config.toml`. Si ce fichier est
