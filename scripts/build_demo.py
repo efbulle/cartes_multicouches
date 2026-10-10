@@ -45,7 +45,10 @@ from cartes_multicouches import (
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "build"
 VILLES_PATH = ROOT / "examples" / "data" / "villes.csv"
-ATTRIBUTION = {"text": "@efbulle", "href": "https://github.com/efbulle"}
+ATTRIBUTION = {
+    "text": "@efbulle · Données PK : SNCF Réseau (open data, ODbL)",
+    "href": "https://github.com/efbulle",
+}
 SECRET_ENV_VARS = ("CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY",)
 
 SHEET = "Ma carte de test"
@@ -153,9 +156,10 @@ a{color:var(--accent)}
 .hero{background:linear-gradient(135deg,#0d3f8f 0%,#2d5ba3 60%,#4a82cc 100%);color:#fff;
 padding:3.5rem 1.25rem 7rem}
 .wrap{max-width:68rem;margin:0 auto}
-.hero h1{margin:0 0 .6rem;font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.15}
-.hero p{margin:0;max-width:42rem;font-size:1.1rem;opacity:.92}
-.hero .cta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.6rem}
+.hero{text-align:center}.hero h1{margin:0 auto .6rem;max-width:46rem;font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.15}
+.hero p{margin:0 auto;max-width:42rem;font-size:1.1rem;opacity:.92}
+.hero .data{margin-top:.8rem;font-size:.95rem;opacity:.85}.hero .data a{color:#fff}
+.hero .cta{display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem;margin-top:1.6rem}
 .btn{display:inline-block;padding:.7rem 1.3rem;border-radius:999px;font-weight:600;
 text-decoration:none;border:2px solid #fff;transition:transform .12s,background .12s,color .12s}
 .btn:hover{transform:translateY(-1px)}
@@ -198,6 +202,7 @@ font-size:.85rem;color:var(--muted)}
 <p><strong>cartes_multicouches</strong> assemble des cartes Bokeh multi-couches filtrables.
 Le builder en fait des pages HTML qui transforment un simple fichier Excel de tronçons en carte,
 sans serveur Python.</p>
+<p class="data">Géolocalisation fondée sur les <a href="https://github.com/nicolaswurtz/extras-opendata-sncf-reseau">données ouvertes de SNCF Réseau</a>.</p>
 <div class="cta">
 <a class="btn btn--primary" href="app.html">Essayer l'application</a>
 <a class="btn btn--ghost" href="../index.html">Voir la carte d'exemple</a>
@@ -240,7 +245,7 @@ exportez la carte.</p><span class="go">Lancer le studio →</span></a>
 <li>Sauvegardez le résultat en HTML autonome.</li>
 </ol>
 
-<footer>{attribution}<br>Tuiles : Esri World Gray Canvas, sans clé d'API.
+<footer>{attribution}<br>Source : <a href="https://data.sncf.com/">open data SNCF</a> via <a href="https://github.com/nicolaswurtz/extras-opendata-sncf-reseau">extras-opendata-sncf-reseau</a>.<br>Tuiles : Esri World Gray Canvas, sans clé d'API.
 Code source et documentation sur <a href="https://github.com/efbulle/cartes_multicouches">GitHub</a>.</footer>
 </main>
 </body>
