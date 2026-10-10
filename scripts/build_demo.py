@@ -14,7 +14,6 @@ Aucune clé d'API n'est utilisée : les tuiles viennent d'un fournisseur sans cl
 """
 
 import argparse
-import html
 import os
 import shutil
 import sys
@@ -23,7 +22,6 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 from cartes_builder import (
-    PKS_ATTRIBUTION,
     Dataset,
     ajoute_geo,
     build_tronloc_file,
@@ -46,7 +44,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "build"
 VILLES_PATH = ROOT / "examples" / "data" / "villes.csv"
 ATTRIBUTION = {
-    "text": "@efbulle · Données PK : SNCF Réseau (open data, ODbL)",
+    "text": "@efbulle · Données : SNCF / SNCF Réseau (open data), extras-opendata-sncf-reseau (ODbL)",
     "href": "https://github.com/efbulle",
 }
 SECRET_ENV_VARS = ("CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY",)
@@ -156,9 +154,8 @@ a{color:var(--accent)}
 .hero{background:linear-gradient(135deg,#0d3f8f 0%,#2d5ba3 60%,#4a82cc 100%);color:#fff;
 padding:3.5rem 1.25rem 7rem}
 .wrap{max-width:68rem;margin:0 auto}
-.hero{text-align:center}.hero h1{margin:0 auto .6rem;max-width:46rem;font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.15}
-.hero p{margin:0 auto;max-width:42rem;font-size:1.1rem;opacity:.92}
-.hero .data{margin-top:.8rem;font-size:.95rem;opacity:.85}.hero .data a{color:#fff}
+.hero{text-align:center}.hero h1{margin:0 auto .6rem;max-width:60rem;font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.15}
+.hero p{margin:0 auto;max-width:56rem;font-size:1.1rem;opacity:.92}
 .hero .cta{display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem;margin-top:1.6rem}
 .btn{display:inline-block;padding:.7rem 1.3rem;border-radius:999px;font-weight:600;
 text-decoration:none;border:2px solid #fff;transition:transform .12s,background .12s,color .12s}
@@ -202,7 +199,6 @@ font-size:.85rem;color:var(--muted)}
 <p><strong>cartes_multicouches</strong> assemble des cartes Bokeh multi-couches filtrables.
 Le builder en fait des pages HTML qui transforment un simple fichier Excel de tronçons en carte,
 sans serveur Python.</p>
-<p class="data">Géolocalisation fondée sur les <a href="https://github.com/nicolaswurtz/extras-opendata-sncf-reseau">données ouvertes de SNCF Réseau</a>.</p>
 <div class="cta">
 <a class="btn btn--primary" href="app.html">Essayer l'application</a>
 <a class="btn btn--ghost" href="../index.html">Voir la carte d'exemple</a>
@@ -245,8 +241,19 @@ exportez la carte.</p><span class="go">Lancer le studio →</span></a>
 <li>Sauvegardez le résultat en HTML autonome.</li>
 </ol>
 
-<footer>{attribution}<br>Source : <a href="https://data.sncf.com/">open data SNCF</a> via <a href="https://github.com/nicolaswurtz/extras-opendata-sncf-reseau">extras-opendata-sncf-reseau</a>.<br>Tuiles : Esri World Gray Canvas, sans clé d'API.
-Code source et documentation sur <a href="https://github.com/efbulle/cartes_multicouches">GitHub</a>.</footer>
+<footer>
+<p><strong>Sources des données.</strong>
+Les gares et les lignes du réseau ferré national proviennent de l'open data de
+<a href="https://data.sncf.com/">SNCF et SNCF Réseau</a>.</p>
+<p>La géolocalisation des tronçons s'appuie sur les jeux de données du dépôt
+<a href="https://github.com/nicolaswurtz/extras-opendata-sncf-reseau">nicolaswurtz/extras-opendata-sncf-reseau</a>.
+Ils sont intégralement fabriqués par transformation ou extrapolation des jeux de données
+publiés en open data, entre autres, par SNCF et SNCF Réseau
+(cf. <a href="https://data.sncf.com/">data.sncf.com</a>), et sont diffusés sous
+<a href="https://opendatacommons.org/licenses/odbl/1.0/index.html">licence ODbL</a>.</p>
+<p>Tuiles : Esri World Gray Canvas, sans clé d'API. Code source et documentation sur
+<a href="https://github.com/efbulle/cartes_multicouches">GitHub</a>.</p>
+</footer>
 </main>
 </body>
 </html>
@@ -254,9 +261,7 @@ Code source et documentation sur <a href="https://github.com/efbulle/cartes_mult
 
 
 def _write_index(out: Path, standalone_mb: float) -> None:
-    page = INDEX_TEMPLATE.replace("{standalone_mb:.0f}", f"{standalone_mb:.0f}").replace(
-        "{attribution}", html.escape(PKS_ATTRIBUTION)
-    )
+    page = INDEX_TEMPLATE.replace("{standalone_mb:.0f}", f"{standalone_mb:.0f}")
     (out / "index.html").write_text(page, encoding="utf-8")
 
 
