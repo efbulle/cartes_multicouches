@@ -7,9 +7,8 @@ Usage :
   1. référentiel public des PK (OpenData SNCF, ODbL) -> cache `build/tronloc.parquet`
   2. wheel de cartes_multicouches (`uv build`)
   3. fichier Excel de test
-  4. carte Bokeh statique d'exemple
-  5. applications PyScript : version légère (assets chargés par pyfetch) et autoportante
-  6. page d'accueil de la démo + vérification qu'aucun secret n'a été publié
+  4. applications PyScript : version légère (assets chargés par pyfetch) et autoportante
+  5. page d'accueil de la démo + vérification qu'aucun secret n'a été publié
 
 Aucune clé d'API n'est utilisée : les tuiles viennent d'un fournisseur sans clé.
 """
@@ -23,7 +22,6 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
-from bokeh.resources import CDN
 from cartes_builder import (
     PKS_ATTRIBUTION,
     Dataset,
@@ -139,28 +137,121 @@ def macarte_complete(xl, feuille, legende, selecteur, tronloc, villes, attributi
     )
 
 
-def _write_index(out: Path, standalone_mb: float) -> None:
-    page = f"""<!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>cartes_multicouches — builder</title>
-<style>body{{font-family:system-ui,sans-serif;max-width:46rem;margin:2rem auto;padding:0 1rem;color:#1e2530}}
-li{{margin:.6rem 0}}small{{color:#6b7686}}</style></head><body>
-<h1>cartes_multicouches — démonstrations du builder</h1>
-<p>Le builder génère des pages HTML qui construisent des cartes
-<a href="https://github.com/efbulle/cartes_multicouches">cartes_multicouches</a>
-dans le navigateur (PyScript), à partir d'un fichier Excel de tronçons (<code>code_ligne</code>,
-PK début/fin en km).</p>
-<ul>
-<li><a href="maps/carte_troncons.html">Carte Bokeh classique</a> — rendu direct.</li>
-<li><a href="app.html">Application PyScript</a> — importez un .xlsx (exemple :
-<a href="test_tron.xlsx">test_tron.xlsx</a>), choisissez feuille, légende et sélecteur.</li>
-<li><a href="app_simple.html">Application PyScript minimale</a> — une couche de tronçons.</li>
-<li><a href="standalone/app_standalone.html">Version autoportante</a> ({standalone_mb:.0f} Mo, tout
-est embarqué dans un seul fichier) — <small>à télécharger pour un usage hors ligne.</small></li>
-</ul>
-<p><small>{html.escape(PKS_ATTRIBUTION)}</small></p>
-</body></html>
+INDEX_TEMPLATE = """<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>cartes_multicouches — démonstrations</title>
+<style>
+:root{--bg:#f4f6fa;--panel:#fff;--border:#dde3ec;--text:#1e2530;--muted:#657084;
+--accent:#2d5ba3;--accent-dark:#0d3f8f;--soft:#e4edf9;--radius:14px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+color:var(--text);background:var(--bg);line-height:1.55}
+a{color:var(--accent)}
+.hero{background:linear-gradient(135deg,#0d3f8f 0%,#2d5ba3 60%,#4a82cc 100%);color:#fff;
+padding:3.5rem 1.25rem 7rem}
+.wrap{max-width:68rem;margin:0 auto}
+.hero h1{margin:0 0 .6rem;font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.15}
+.hero p{margin:0;max-width:42rem;font-size:1.1rem;opacity:.92}
+.hero .cta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.6rem}
+.btn{display:inline-block;padding:.7rem 1.3rem;border-radius:999px;font-weight:600;
+text-decoration:none;border:2px solid #fff;transition:transform .12s,background .12s,color .12s}
+.btn:hover{transform:translateY(-1px)}
+.btn--primary{background:#fff;color:var(--accent-dark)}
+.btn--ghost{color:#fff}
+.btn--ghost:hover{background:rgba(255,255,255,.15)}
+.preview{margin:-5rem 0 0;padding:0}
+.preview a{display:block;border-radius:var(--radius);overflow:hidden;background:var(--panel);
+box-shadow:0 18px 50px rgba(13,63,143,.28);border:1px solid var(--border)}
+.preview img{display:block;width:100%;height:auto;transition:transform .3s}
+.preview a:hover img{transform:scale(1.012)}
+.preview figcaption{padding:.6rem 1rem;font-size:.85rem;color:var(--muted);background:var(--panel)}
+h2{margin:3rem 0 1rem;font-size:1.4rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.1rem}
+.card{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border);
+border-radius:var(--radius);padding:1.3rem;text-decoration:none;color:inherit;
+transition:box-shadow .15s,transform .15s,border-color .15s}
+.card:hover{box-shadow:0 10px 28px rgba(30,37,48,.12);transform:translateY(-2px);
+border-color:var(--accent)}
+.card .tag{align-self:flex-start;font-size:.72rem;font-weight:700;letter-spacing:.05em;
+text-transform:uppercase;color:var(--accent);background:var(--soft);padding:.2rem .6rem;
+border-radius:999px}
+.card h3{margin:.8rem 0 .4rem;font-size:1.1rem}
+.card p{margin:0 0 1rem;color:var(--muted);font-size:.95rem}
+.card .go{margin-top:auto;font-weight:600;color:var(--accent)}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.1rem;
+counter-reset:step;padding:0;list-style:none}
+.how li{counter-increment:step;background:var(--panel);border:1px solid var(--border);
+border-radius:var(--radius);padding:1.1rem 1.2rem 1.1rem 3.4rem;position:relative}
+.how li::before{content:counter(step);position:absolute;left:1rem;top:1rem;width:1.8rem;
+height:1.8rem;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;
+display:grid;place-items:center}
+footer{margin:3.5rem 0 2rem;padding-top:1.2rem;border-top:1px solid var(--border);
+font-size:.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+<h1>Des cartes interactives, construites dans votre navigateur</h1>
+<p><strong>cartes_multicouches</strong> assemble des cartes Bokeh multi-couches filtrables.
+Le builder en fait des pages HTML qui transforment un simple fichier Excel de tronçons en carte,
+sans serveur Python.</p>
+<div class="cta">
+<a class="btn btn--primary" href="app.html">Essayer l'application</a>
+<a class="btn btn--ghost" href="../index.html">Voir la carte d'exemple</a>
+<a class="btn btn--ghost" href="https://github.com/efbulle/cartes_multicouches">GitHub</a>
+</div></div></header>
+
+<main class="wrap">
+<figure class="preview">
+<a href="../index.html"><img src="../preview.png" alt="Carte du réseau ferré : gares et lignes, avec filtres, indicateurs et légende"></a>
+<figcaption>Un extrait de ce que produit le package : couches, filtres, indicateurs et légende.
+Cliquez pour ouvrir la carte interactive.</figcaption>
+</figure>
+
+<h2>Les démonstrations</h2>
+<div class="cards">
+<a class="card" href="../index.html"><span class="tag">Carte Bokeh</span>
+<h3>Réseau ferré : gares et lignes</h3>
+<p>Rendu direct, ultra-rapide : plusieurs couches, filtres, tables liées et indicateurs.</p>
+<span class="go">Ouvrir la carte →</span></a>
+<a class="card" href="app.html"><span class="tag">Application</span>
+<h3>Studio PyScript</h3>
+<p>Importez un .xlsx, choisissez la feuille, la légende et le sélecteur, puis construisez et
+exportez la carte.</p><span class="go">Lancer le studio →</span></a>
+<a class="card" href="app_simple.html"><span class="tag">Application</span>
+<h3>Version minimale</h3>
+<p>Une seule couche de tronçons géolocalisés : le plus court chemin de l'Excel à la carte.</p>
+<span class="go">Essayer →</span></a>
+<a class="card" href="standalone/app_standalone.html"><span class="tag">Hors ligne</span>
+<h3>Version autoportante</h3>
+<p>Un seul fichier de {standalone_mb:.0f} Mo qui embarque tout : à télécharger et à partager.</p>
+<span class="go">Ouvrir →</span></a>
+</div>
+
+<h2>Comment ça marche</h2>
+<ol class="how">
+<li><a href="test_tron.xlsx">Téléchargez test_tron.xlsx</a> ou préparez votre fichier
+(<code>code_ligne</code>, PK début et fin en km).</li>
+<li>Ouvrez le studio et chargez le fichier. Le premier démarrage prend quelques secondes.</li>
+<li>Choisissez les paramètres puis cliquez sur « Construire la carte ».</li>
+<li>Sauvegardez le résultat en HTML autonome.</li>
+</ol>
+
+<footer>{attribution}<br>Tuiles : Esri World Gray Canvas, sans clé d'API.
+Code source et documentation sur <a href="https://github.com/efbulle/cartes_multicouches">GitHub</a>.</footer>
+</main>
+</body>
+</html>
 """
+
+
+def _write_index(out: Path, standalone_mb: float) -> None:
+    page = INDEX_TEMPLATE.replace("{standalone_mb:.0f}", f"{standalone_mb:.0f}").replace(
+        "{attribution}", html.escape(PKS_ATTRIBUTION)
+    )
     (out / "index.html").write_text(page, encoding="utf-8")
 
 
@@ -198,13 +289,6 @@ def main() -> int:
         TEST_DATA.to_excel(writer, index=False, sheet_name=SHEET)
 
     datasets = {"tronloc": Dataset(tronloc_path), "villes": Dataset(VILLES_PATH)}
-
-    tronloc = gpd.read_parquet(tronloc_path)
-    villes = pd.read_csv(VILLES_PATH)
-    with pd.ExcelFile(xlsx) as xl:
-        carte = macarte_complete(xl, SHEET, "valeur", "categorie", tronloc, villes, ATTRIBUTION)
-    (out / "maps").mkdir()
-    carte.save(out / "maps" / "carte_troncons.html", resources=CDN)
 
     common = {
         "wheel_path": wheel,
