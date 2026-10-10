@@ -1,0 +1,31 @@
+[project]
+name = "cartes-multicouches-builder"
+version = "0.1.0"
+description = "Génère des pages HTML PyScript qui construisent des cartes cartes_multicouches à partir d'un Excel"
+license = "MIT"
+readme = "README.md"
+authors = [
+    { name = "efbulle", email = "emmanuel.favrebulle@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "cartes-multicouches",
+    "jinja2>=3.1",
+    "openpyxl>=3.1",
+    "polars>=1.0",
+    "pyarrow>=15",
+]
+
+[project.urls]
+Homepage = "https://github.com/efbulle/cartes_multicouches"
+Repository = "https://github.com/efbulle/cartes_multicouches"
+
+[tool.uv.sources]
+cartes-multicouches = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.11.33,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "cartes_builder"

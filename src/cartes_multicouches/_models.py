@@ -256,3 +256,5 @@ class AttributionConfig:
 
     text: str = "@efbulle"
     href: str = "https://github.com/efbulle"
+    lines: list[str] = field(default_factory=list)
+    """Lignes HTML supplémentaires (ex. sources de données) affichées sous la signature."""

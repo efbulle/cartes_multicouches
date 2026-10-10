@@ -57,7 +57,10 @@ __all__ = [
 
 _ESRI_GRAY_BASE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
 _ESRI_GRAY_REFERENCE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
-_ESRI_GRAY_ATTRIBUTION = "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
+_ESRI_GRAY_ATTRIBUTION = (
+    'Tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">'
+    "Esri</a> &mdash; Esri, DeLorme, NAVTEQ"
+)
 _ESRI_GRAY_MAX_ZOOM = 16
 _TILE_PROVIDER_API_KEY_ENV_VAR = "CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY"
 _TILE_URL_PLACEHOLDER_PATTERN = re.compile(r"{([^{}]+)}")
@@ -232,9 +235,10 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
             tools=["pan", "wheel_zoom", "reset", "save"],
             active_scroll="wheel_zoom",
         )
+        signature = self._signature_html()
         for tile_source in self._resolve_tile_sources():
             if isinstance(tile_source, TileProvider):
-                fig.add_tile(tile_source, retina=True)
+                renderer = fig.add_tile(tile_source, retina=True)
             else:
                 renderer = fig.add_tile(tile_source)
                 if (
@@ -242,6 +246,10 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
                     and tile_source.url == _ESRI_GRAY_REFERENCE_URL
                 ):
                     renderer.level = "annotation"
+            # La signature rejoint la ligne d'attribution des tuiles ; des sources
+            # identiques (ex. Esri) restent fusionnées par Bokeh.
+            base = renderer.tile_source.attribution
+            renderer.tile_source.attribution = f"{base} · {signature}" if base else signature
         fig.toolbar.autohide = True
         fig.axis.visible = False
         fig.grid.visible = False

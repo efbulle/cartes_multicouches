@@ -19,6 +19,12 @@ def macarte_cle(xl, tronloc, tile_provider_api_key):
     return tile_provider_api_key
 
 
+@pytest.fixture(autouse=True)
+def _sans_cle_env(monkeypatch):
+    # La CI exporte la vraie clé de tuiles : les tests ne doivent pas en dépendre.
+    monkeypatch.delenv("CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY", raising=False)
+
+
 @pytest.fixture
 def wheel(tmp_path):
     path = tmp_path / "pkg-1.0-py3-none-any.whl"
@@ -74,7 +80,7 @@ def test_pages_ecrit_assets(tmp_path, wheel, datasets):
         tmp_path / "site" / "app",
         datasets=datasets,
         wheel_path=wheel,
-        standalone=True,
+        standalone=False,
     )
     manifest = _manifest(out.read_text(encoding="utf-8"))
     assert "b64" not in manifest["wheel"]

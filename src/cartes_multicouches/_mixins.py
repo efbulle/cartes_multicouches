@@ -740,15 +740,22 @@ class UIBuilderMixin(_CarteDynContext):
             visible=self.legend_config.visible_by_default,
         )
 
-    def _build_attribution_widget(self) -> models.Div:
-        """Construit la signature cliquable, y compris pour les liens mailto:."""
+    def _signature_html(self) -> str:
+        """Signature cliquable (y compris mailto:), ajoutée à l'attribution des tuiles."""
         attribution = self.attribution_config
+        return (
+            f'<a href="{attribution.href}" target="_blank" rel="noopener noreferrer" '
+            f'style="color:inherit; text-decoration:none;">{attribution.text}</a>'
+        )
+
+    def _build_attribution_widget(self) -> models.Div | None:
+        """Construit les lignes de sources de données, au-dessus de l'attribution des tuiles."""
+        lines = self.attribution_config.lines
+        if not lines:
+            return None
         return models.Div(
-            text=(
-                f'<a href="{attribution.href}" target="_blank" '
-                'rel="noopener noreferrer" '
-                f'style="color:#000; text-decoration:none;">{attribution.text}</a>'
-            ),
+            text="<br>".join(lines),
+            stylesheets=[models.InlineStyleSheet(css="a { color: #000; text-decoration: none; }")],
             styles={
                 "position": "absolute",
                 "bottom": "16px",
@@ -760,6 +767,7 @@ class UIBuilderMixin(_CarteDynContext):
                 "padding": "0 4px",
                 "border-radius": "3px",
                 "pointer-events": "auto",
+                "text-align": "right",
             },
             visible=True,
         )
@@ -947,7 +955,9 @@ class UIBuilderMixin(_CarteDynContext):
             map_children.append(self.legend_widget)
             map_children.append(self.toggle_legend_button)
 
-        map_children.append(self._build_attribution_widget())
+        attribution_widget = self._build_attribution_widget()
+        if attribution_widget is not None:
+            map_children.append(attribution_widget)
 
         stack_style: dict[str, str | None] = {"position": "relative"}
         return column(*map_children, sizing_mode="stretch_both", styles=stack_style)

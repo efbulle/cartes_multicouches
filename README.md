@@ -26,6 +26,7 @@ export CSV, le tout en HTML autonome.
 - [`AttributionConfig`](#attributionconfig)
 - [`carte_une_couche` — construction rapide](#carte_une_couche--construction-rapide)
 - [Recettes](#recettes)
+- [Builder : cartes dans le navigateur](#builder--cartes-dans-le-navigateur)
 - [Tests](#tests)
 - [Licence](#licence)
 
@@ -446,9 +447,12 @@ dépendance à un rendu Bokeh caché).
 class AttributionConfig:
     text: str = "@efbulle"
     href: str = "https://github.com/efbulle"
+    lines: list[str] = field(default_factory=list)
 ```
 
-Petite signature en bas à droite de la carte, cliquable.
+Petite signature cliquable, ajoutée en bas à droite de la carte sur la ligne d'attribution
+des tuiles. `lines` ajoute des lignes HTML (par exemple les sources de données, avec leurs
+liens) juste au-dessus de cette ligne.
 
 Sans `attribution_config` explicite, la bibliothèque charge aussi les préférences
 personnelles dans `%APPDATA%/cartes_multicouches/config.toml`. Si ce fichier est
@@ -623,6 +627,18 @@ carte = CarteDynMulti(
     attribution_config=AttributionConfig(text="@moncompte"),
 )
 carte.save("reseau.html")
+```
+
+---
+
+## Builder : cartes dans le navigateur
+
+Le sous-projet [`builder/`](builder/README.md) (paquet `cartes-multicouches-builder`, hors
+wheel) génère des pages HTML PyScript qui construisent une carte à partir d'un fichier Excel,
+sans serveur Python. La démonstration publique se construit avec :
+
+```bash
+uv run python scripts/build_demo.py   # écrit docs/builder/
 ```
 
 ---

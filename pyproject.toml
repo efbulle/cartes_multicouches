@@ -36,8 +36,15 @@ Issues = "https://github.com/efbulle/cartes_multicouches/issues"
 requires = ["uv_build>=0.11.33,<0.13.0"]
 build-backend = "uv_build"
 
+[tool.uv.workspace]
+members = ["builder"]
+
+[tool.uv.sources]
+cartes-multicouches-builder = { workspace = true }
+
 [dependency-groups]
 dev = [
+    "cartes-multicouches-builder",
     "pillow>=12.3.0",
     "platformdirs>=4.11.0",
     "pytest>=9.1.1",
@@ -49,7 +56,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "builder/tests"]
 addopts = "-ra"
 
 [tool.coverage.run]
