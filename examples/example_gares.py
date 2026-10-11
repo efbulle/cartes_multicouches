@@ -82,7 +82,7 @@ SIZE_GARE_AUTRE = 6
 
 def default_output_path() -> Path:
     repo_root = Path(__file__).resolve().parent.parent
-    return repo_root / "docs" / "index.html"
+    return repo_root / "docs" / "carte.html"
 
 
 def build_sample_map(output_path: Path | str = "example_map_gares.html") -> Path:

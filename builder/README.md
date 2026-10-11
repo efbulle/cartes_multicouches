@@ -73,5 +73,7 @@ restreindre la clé côté fournisseur (domaines autorisés).
 
 ## Démonstration
 
-`scripts/build_demo.py` génère `docs/builder/` (carte Bokeh classique, applications PyScript
-légères et version autoportante) avec des tuiles sans clé (`Esri.WorldGrayCanvas`).
+`scripts/build_demo.py` génère `docs/builder/` (applications PyScript légères et version
+autoportante) et la page d'accueil du site `docs/index.html`, avec des tuiles sans clé
+(`Esri.WorldGrayCanvas`). La carte Bokeh classique est `docs/carte.html`
+(`examples/example_gares.py`).
