@@ -638,7 +638,7 @@ wheel) génère des pages HTML PyScript qui construisent une carte à partir d'u
 sans serveur Python. La démonstration publique se construit avec :
 
 ```bash
-uv run python scripts/build_demo.py   # écrit docs/builder/
+uv run python scripts/build_demo.py   # écrit docs/index.html (accueil) et docs/builder/
 ```
 
 ---

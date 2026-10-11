@@ -1,4 +1,4 @@
-"""Construit la démonstration publique du builder dans `docs/builder/`.
+"""Construit la page d'accueil du site et la démonstration du builder (`docs/builder/`).
 
 Usage :
     uv run python scripts/build_demo.py [--out docs/builder] [--refresh]
@@ -8,7 +8,8 @@ Usage :
   2. wheel de cartes_multicouches (`uv build`)
   3. fichier Excel de test
   4. applications PyScript : version légère (assets chargés par pyfetch) et autoportante
-  5. page d'accueil de la démo + vérification qu'aucun secret n'a été publié
+  5. page d'accueil du site (`docs/index.html`, à côté du dossier du builder) et vérification
+     qu'aucun secret n'a été publié
 
 Aucune clé d'API n'est utilisée : les tuiles viennent d'un fournisseur sans clé.
 """
@@ -153,10 +154,11 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>cartes_multicouches — démonstrations</title>
-<meta name="description" content="Cartes Bokeh multi-couches filtrables à partir d’un fichier Excel de tronçons, sans serveur Python.">
+<meta name="description" content="Projet open source sous licence MIT : créez des cartes interactives multi-couches avec Python et Bokeh, explorez les démonstrations et générez des pages HTML autonomes à partir de vos données, sans serveur.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="cartes_multicouches — démonstrations">
-<meta property="og:description" content="Cartes Bokeh multi-couches filtrables à partir d’un fichier Excel de tronçons, sans serveur Python.">
+<meta property="og:description" content="Projet open source sous licence MIT : créez des cartes interactives multi-couches avec Python et Bokeh, explorez les démonstrations et générez des pages HTML autonomes à partir de vos données, sans serveur.">
+<meta property="og:url" content="https://efbulle.github.io/cartes_multicouches/">
 <meta property="og:image" content="https://efbulle.github.io/cartes_multicouches/preview.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🗺️%3C/text%3E%3C/svg%3E">
 <style>
@@ -176,6 +178,7 @@ line-height:1.2;text-wrap:balance}
 .hero .lead{margin:0 auto;max-width:56rem;font-size:clamp(1.05rem,2vw,1.25rem);line-height:1.7;
 opacity:.95;text-wrap:balance}
 .hero .cta{display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem;margin-top:1.6rem}
+.hero .tech-note{margin:.85rem auto 0;font-size:.85rem;opacity:.75}
 
 /* Boutons */
 .btn{display:inline-block;padding:.7rem 1.3rem;border-radius:999px;font-weight:600;
@@ -240,33 +243,35 @@ font-size:.85rem;color:var(--muted)}
 <p class="lead">Créez des cartes multi-couches et filtrables à partir de vos données ferroviaires.
 Générez des pages HTML autonomes, consultables et partageables sans serveur.</p>
 <div class="cta">
-<a class="btn btn--primary" href="../index.html">Voir la carte d’exemple</a>
-<a class="btn btn--ghost" href="app.html">Essayer l’application</a>
+<a class="btn btn--primary" href="carte.html">Voir la carte d’exemple</a>
+<a class="btn btn--ghost" href="{builder_dir}/app.html">Essayer l’application</a>
 <a class="btn btn--ghost" href="https://github.com/efbulle/cartes_multicouches"><svg class="icon" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
-</div></div></header>
+</div>
+<p class="tech-note">Open source (licence MIT) · Python, PyScript, Bokeh, GeoPandas · Données Open Data SNCF</p>
+</div></header>
 
 <main class="wrap">
 <figure class="preview">
-<a href="../index.html"><img src="../preview.png" alt="Carte du réseau ferré : gares et lignes, avec filtres, indicateurs et légende"></a>
+<a href="carte.html"><img src="preview.png" alt="Carte du réseau ferré : gares et lignes, avec filtres, indicateurs et légende"></a>
 <figcaption>Un extrait de ce que produit le package&nbsp;: couches, filtres, indicateurs et légende.
 Cliquez pour ouvrir la carte interactive.</figcaption>
 </figure>
 
 <h2>Les démonstrations</h2>
 <div class="cards">
-<a class="card" href="../index.html"><span class="tag">Carte Bokeh</span>
+<a class="card" href="carte.html"><span class="tag">Carte Bokeh</span>
 <h3>Réseau ferré&nbsp;: gares et lignes</h3>
 <p>Rendu direct, ultra-rapide&nbsp;: plusieurs couches, filtres, tables liées et indicateurs.</p>
 <span class="go">Ouvrir la carte&nbsp;→</span></a>
-<a class="card" href="app.html"><span class="tag">Application</span>
+<a class="card" href="{builder_dir}/app.html"><span class="tag">Application</span>
 <h3>Studio PyScript</h3>
 <p>Importez un .xlsx, choisissez la feuille, la légende et le sélecteur, puis construisez et
 exportez la carte.</p><span class="go">Lancer le studio&nbsp;→</span></a>
-<a class="card" href="app_simple.html"><span class="tag">Application</span>
+<a class="card" href="{builder_dir}/app_simple.html"><span class="tag">Application</span>
 <h3>Version minimale</h3>
 <p>Une seule couche de tronçons géolocalisés&nbsp;: le plus court chemin de l’Excel à la carte.</p>
 <span class="go">Essayer&nbsp;→</span></a>
-<a class="card" href="standalone/app_standalone.html"><span class="tag">Hors ligne</span>
+<a class="card" href="{builder_dir}/standalone/app_standalone.html"><span class="tag">Hors ligne</span>
 <h3>Version autoportante</h3>
 <p>Un seul fichier de {standalone_mb:.0f}&nbsp;Mo qui embarque tout&nbsp;: à télécharger et à partager.</p>
 <span class="go">Ouvrir&nbsp;→</span></a>
@@ -274,7 +279,7 @@ exportez la carte.</p><span class="go">Lancer le studio&nbsp;→</span></a>
 
 <h2>Comment ça marche</h2>
 <ol class="how">
-<li><a href="test_tron.xlsx">Téléchargez test_tron.xlsx</a> ou préparez votre fichier
+<li><a href="{builder_dir}/test_tron.xlsx">Téléchargez test_tron.xlsx</a> ou préparez votre fichier
 (<code>code_ligne</code>, PK début et fin en km).</li>
 <li>Ouvrez le studio et chargez le fichier. Le premier démarrage prend quelques secondes.</li>
 <li>Choisissez les paramètres puis cliquez sur &laquo;&nbsp;Construire la carte&nbsp;&raquo;.</li>
@@ -301,8 +306,11 @@ publiés en open data, entre autres, par SNCF et SNCF Réseau
 
 
 def _write_index(out: Path, standalone_mb: float) -> None:
-    page = INDEX_TEMPLATE.replace("{standalone_mb:.0f}", f"{standalone_mb:.0f}")
-    (out / "index.html").write_text(page, encoding="utf-8")
+    """Écrit la page d'accueil du site, un niveau au-dessus du dossier du builder."""
+    page = INDEX_TEMPLATE.replace("{standalone_mb:.0f}", f"{standalone_mb:.0f}").replace(
+        "{builder_dir}", out.name
+    )
+    (out.parent / "index.html").write_text(page, encoding="utf-8")
 
 
 def _check_no_secret(out: Path) -> None:

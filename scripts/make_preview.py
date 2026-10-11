@@ -1,13 +1,13 @@
 """Génère la vignette (aperçu Open Graph) de la page publiée sur GitHub Pages.
 
-Ce script capture une image PNG 1200x627 de ``docs/index.html`` (la page
+Ce script capture une image PNG 1200x627 de ``docs/carte.html`` (la page
 générée par ``examples/example_gares.py``) une fois les tuiles de fond de
 carte chargées, et l'enregistre sous ``docs/preview.png`` — c'est-à-dire
 dans le dossier publié tel quel par GitHub Pages, à l'URL
 https://efbulle.github.io/cartes_multicouches/preview.png.
 
 Ce script n'est volontairement pas exécuté par la CI : il se lance
-manuellement après avoir régénéré ``docs/index.html``, et l'image produite
+manuellement après avoir régénéré ``docs/carte.html``, et l'image produite
 est committée dans le dépôt.
 
 Usage :
@@ -22,7 +22,7 @@ from playwright.sync_api import Request, Response, sync_playwright
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
-PAGE_PATH = DOCS_DIR / "index.html"
+PAGE_PATH = DOCS_DIR / "carte.html"
 PREVIEW_PATH = DOCS_DIR / "preview.png"
 
 WIDTH = 1200
