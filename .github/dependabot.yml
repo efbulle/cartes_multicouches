@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     groups:
       all-github-actions:
         applies-to: version-updates
@@ -19,7 +19,7 @@ updates:
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     groups:
       all-python-dependencies:
         applies-to: version-updates
@@ -36,7 +36,7 @@ updates:
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     groups:
       all-pre-commit-hooks:
         applies-to: version-updates
