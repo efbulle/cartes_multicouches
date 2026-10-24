@@ -42,7 +42,11 @@ source = { editable = "." }
 dependencies = [
     { name = "bokeh" },
     { name = "geopandas" },
+    { name = "jinja2" },
+    { name = "packaging" },
+    { name = "pandas" },
     { name = "shapely" },
+    { name = "xyzservices" },
 ]
 
 [package.dev-dependencies]
@@ -50,6 +54,7 @@ dev = [
     { name = "cartes-multicouches-builder" },
     { name = "pillow" },
     { name = "platformdirs" },
+    { name = "playwright" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -62,7 +67,11 @@ dev = [
 requires-dist = [
     { name = "bokeh", specifier = ">=3.10,<4" },
     { name = "geopandas", specifier = ">=1.1.3" },
+    { name = "jinja2", specifier = ">=3.1" },
+    { name = "packaging", specifier = ">=24" },
+    { name = "pandas", specifier = ">=2.2" },
     { name = "shapely", specifier = ">=2.1.2" },
+    { name = "xyzservices", specifier = ">=2024.4" },
 ]
 
 [package.metadata.requires-dev]
@@ -70,6 +79,7 @@ dev = [
     { name = "cartes-multicouches-builder", editable = "builder" },
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "platformdirs", specifier = ">=4.11.0" },
+    { name = "playwright", specifier = ">=1.50" },
     { name = "pre-commit", specifier = ">=4.5.0" },
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
@@ -84,19 +94,27 @@ version = "0.1.0"
 source = { editable = "builder" }
 dependencies = [
     { name = "cartes-multicouches" },
+    { name = "geopandas" },
     { name = "jinja2" },
+    { name = "numpy" },
     { name = "openpyxl" },
+    { name = "pandas" },
     { name = "polars" },
     { name = "pyarrow" },
+    { name = "shapely" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "cartes-multicouches", editable = "." },
+    { name = "geopandas", specifier = ">=1.1.3" },
     { name = "jinja2", specifier = ">=3.1" },
+    { name = "numpy", specifier = ">=1.26" },
     { name = "openpyxl", specifier = ">=3.1" },
+    { name = "pandas", specifier = ">=2.2" },
     { name = "polars", specifier = ">=1.0" },
     { name = "pyarrow", specifier = ">=15" },
+    { name = "shapely", specifier = ">=2.1.2" },
 ]
 
 [[package]]
