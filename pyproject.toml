@@ -24,7 +24,11 @@ classifiers = [
 dependencies = [
     "bokeh>=3.10,<4",
     "geopandas>=1.1.3",
+    "jinja2>=3.1",
+    "packaging>=24",
+    "pandas>=2.2",
     "shapely>=2.1.2",
+    "xyzservices>=2024.4",
 ]
 
 [project.urls]
@@ -47,6 +51,7 @@ dev = [
     "cartes-multicouches-builder",
     "pillow>=12.3.0",
     "platformdirs>=4.11.0",
+    "playwright>=1.50",
     "pytest>=9.1.1",
     "pytest-cov>=7.0.0",
     "pytest-playwright>=0.9.0",
