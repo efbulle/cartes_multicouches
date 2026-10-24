@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 
@@ -27,7 +28,8 @@ def layer_checkbox(page, label: str):
 
 def is_tile_response(response) -> bool:
     """Indique qu'une tuile CartoDB a été chargée avec succès."""
-    return response.ok and "basemaps.cartocdn.com" in response.url
+    host = urlparse(response.url).hostname
+    return response.ok and host == "basemaps.cartocdn.com"
 
 
 with sync_playwright() as p:
