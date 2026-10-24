@@ -4,9 +4,13 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 10
     groups:
-      github-actions:
+      all-github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      github-actions-security:
+        applies-to: security-updates
         patterns:
           - "*"
     commit-message:
@@ -16,9 +20,13 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 10
     groups:
-      python-dependencies:
+      all-python-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      python-security:
+        applies-to: security-updates
         patterns:
           - "*"
     commit-message:
@@ -29,5 +37,10 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      all-pre-commit-hooks:
+        applies-to: version-updates
+        patterns:
+          - "*"
     commit-message:
       prefix: "chore(pre-commit)"
