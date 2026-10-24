@@ -5,7 +5,6 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 1
     groups:
       all-github-actions:
         applies-to: version-updates
@@ -23,7 +22,6 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 1
     groups:
       all-python-dependencies:
         applies-to: version-updates
@@ -42,7 +40,6 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 1
     groups:
       all-pre-commit-hooks:
         applies-to: version-updates
