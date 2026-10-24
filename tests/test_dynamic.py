@@ -11,7 +11,7 @@ from bokeh.models import (
     Select,
     TapTool,
 )
-from bokeh.resources import INLINE
+from bokeh.resources import CDN, INLINE
 from shapely.geometry import LineString, MultiLineString, Point, Polygon
 from xyzservices import TileProvider
 
@@ -848,9 +848,14 @@ def test_save_can_embed_bokeh_resources_inline(tmp_path) -> None:
     carte.save(inline_path, resources=INLINE)
     carte.save(inline_string_path, resources="inline")
 
-    assert "cdn.bokeh.org" in cdn_path.read_text(encoding="utf-8")
-    assert "cdn.bokeh.org" not in inline_path.read_text(encoding="utf-8")
-    assert "cdn.bokeh.org" not in inline_string_path.read_text(encoding="utf-8")
+    cdn_html = cdn_path.read_text(encoding="utf-8")
+    inline_html = inline_path.read_text(encoding="utf-8")
+    inline_string_html = inline_string_path.read_text(encoding="utf-8")
+    cdn_script_url = CDN.js_files[0]
+
+    assert cdn_script_url in cdn_html
+    assert cdn_script_url not in inline_html
+    assert cdn_script_url not in inline_string_html
 
 
 def test_attribution_accepts_mailto_href() -> None:
