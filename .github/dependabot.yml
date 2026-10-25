@@ -2,6 +2,8 @@ version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
+    assignees:
+      - "efbulle"
     schedule:
       interval: "weekly"
     groups:
@@ -18,6 +20,8 @@ updates:
 
   - package-ecosystem: "uv"
     directory: "/"
+    assignees:
+      - "efbulle"
     schedule:
       interval: "weekly"
     groups:
@@ -35,6 +39,8 @@ updates:
   # Hooks pre-commit (.pre-commit-config.yaml)
   - package-ecosystem: "pre-commit"
     directory: "/"
+    assignees:
+      - "efbulle"
     schedule:
       interval: "weekly"
     groups:
