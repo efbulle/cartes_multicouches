@@ -4,6 +4,17 @@ Une page générée contient un sélecteur de fichier Excel, des sélecteurs de
 paramètres et une fonction `mafunc` (extraite du code Python de l'appelant)
 qui produit la carte dans le navigateur.
 
+Les pages proposent en outre, sans changer le parcours `mafunc` :
+
+- un bouton « Données complémentaires » : fichiers xlsx/csv additionnels,
+  utilisables par la configuration JSON (une couche peut lire le fichier
+  principal ou l'un d'eux) ;
+- un bouton « Charger une configuration (JSON) » : spec interprétée par le
+  module `spec.py` (inclus par défaut), qui construit la carte via
+  `carte_from_spec` — multi-couches, multi-fichiers et multi-référentiels
+  (les référentiels sont des jeux de données de la page, déclarés dans la
+  spec par leur nom).
+
 Deux modes de livraison :
 
 - `standalone=True` : wheel de cartes_multicouches et jeux de données sont
@@ -40,6 +51,7 @@ from jinja2 import Environment, PackageLoader, StrictUndefined
 PYSCRIPT_VERSION = "2026.7.3"
 TILE_API_KEY_ENV = "CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY"
 BUILTIN_GEOLOC = Path(__file__).with_name("geoloc.py")
+BUILTIN_SPEC = Path(__file__).with_name("spec.py")
 
 # Variables globales toujours définies dans la page, en plus des jeux de données.
 BASE_TEMPLATE_GLOBALS = frozenset({"attribution_config", "tile_provider_api_key"})
@@ -205,7 +217,7 @@ def _selectors_html(select: Mapping[str, Literal["xl_sheetnames", "xl_cols"] | l
 
 def _json_for_script(obj) -> str:
     """JSON insérable dans une balise <script> (neutralise '</')."""
-    return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\/")
 
 
 def _write_asset(assets_dir: Path, stem: str, suffix: str, data: bytes) -> str:
@@ -242,10 +254,13 @@ def gen_carte(
             Les paramètres finaux nommés comme une clé de `datasets`,
             `attribution_config` ou `tile_provider_api_key` sont fournis par la page.
         filepath: fichier HTML produit (suffixe forcé à .html).
-        datasets: jeux de données accessibles dans `mafunc` sous le nom de leur clé.
+        datasets: jeux de données accessibles dans `mafunc` sous le nom de leur clé ;
+            les jeux "geo" peuvent aussi servir de référentiels à la configuration JSON.
         select: sélecteurs de paramètres (un par argument de `mafunc` après `xl`).
         geoloc_modules: fichiers Python injectés dans la page (fonctions utilisables
-            par `mafunc`, ex. `ajoute_geo`). Par défaut : `cartes_builder.geoloc`.
+            par `mafunc`, ex. `ajoute_geo`). Par défaut :
+            `[cartes_builder.geoloc, cartes_builder.spec]` — le second fournit
+            `carte_from_spec` et ses auxiliaires au bouton « Configuration (JSON) ».
         standalone: True pour embarquer wheel et données, False pour les charger
             depuis `assets_dir` (refuse jeux privés et clé d'API).
         wheel_path / repo_dir: wheel de cartes_multicouches, ou dépôt où le chercher.
@@ -292,7 +307,8 @@ def gen_carte(
 
     mafunc_code = _prepare_mafunc_source(mafunc, template_globals)
     modules = [
-        Path(m) for m in (geoloc_modules if geoloc_modules is not None else [BUILTIN_GEOLOC])
+        Path(m)
+        for m in (geoloc_modules if geoloc_modules is not None else [BUILTIN_GEOLOC, BUILTIN_SPEC])
     ]
     modules_code = "\n\n".join(m.read_text(encoding="utf-8") for m in modules)
     if any("</script" in block.lower() for block in (mafunc_code, modules_code)):
