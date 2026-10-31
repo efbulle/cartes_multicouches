@@ -133,7 +133,9 @@ class SourceFichiers:
             try:
                 return pd.read_excel(io.BytesIO(brut), sheet_name=feuille)
             except ValueError as exc:
-                raise SpecError(f"Feuille {feuille!r} introuvable dans le fichier '{nom}'.") from exc
+                raise SpecError(
+                f"Feuille {feuille!r} introuvable dans le fichier '{nom}'."
+            ) from exc
         return pd.read_csv(io.BytesIO(brut))
 
 
@@ -303,9 +305,7 @@ def couches_depuis_spec(spec_couche, source, referentiels):
 
     nom = spec_couche.get("nom_couche", "Données")
     tooltips = (
-        [(c, f"@{c}") for c in spec_couche["tooltips"]]
-        if spec_couche.get("tooltips")
-        else None
+        [(c, f"@{c}") for c in spec_couche["tooltips"]] if spec_couche.get("tooltips") else None
     )
     est_point = gdf.geometry.geom_type.eq("Point")
     # une couche ne peut pas mélanger points et lignes (ex. PK ponctuels et tronçons)
