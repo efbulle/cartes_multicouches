@@ -134,8 +134,8 @@ class SourceFichiers:
                 return pd.read_excel(io.BytesIO(brut), sheet_name=feuille)
             except ValueError as exc:
                 raise SpecError(
-                f"Feuille {feuille!r} introuvable dans le fichier '{nom}'."
-            ) from exc
+                    f"Feuille {feuille!r} introuvable dans le fichier '{nom}'."
+                ) from exc
         return pd.read_csv(io.BytesIO(brut))
 
 
