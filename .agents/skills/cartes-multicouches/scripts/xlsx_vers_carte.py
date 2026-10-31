@@ -187,7 +187,9 @@ def cmd_doctor(args) -> None:
             "et installe les paquets manquants, à condition que le réseau soit joignable."
         )
     else:
-        print("Verdict : ni environnement prêt ni uv. Installer uv, sinon renvoyer vers le constructeur en ligne.")
+        print(
+            "Verdict : ni environnement prêt ni uv. Installer uv, sinon renvoyer vers le constructeur en ligne."
+        )
         sys.exit(1)
 
 
@@ -219,6 +221,7 @@ def _geometrie_pk(df, pks) -> dict | None:
     """Propose une géométrie par PK d'après les noms de colonnes (à confirmer avec l'utilisateur)."""
     if not pks:
         return None
+
     def norm(c):
         sans_accent = unicodedata.normalize("NFD", str(c).lower())
         return "".join(ch for ch in sans_accent if unicodedata.category(ch) != "Mn")
@@ -248,7 +251,9 @@ def cmd_init_spec(args) -> None:
     spec: dict = {"fichier": args.fichier}
     if args.feuille is not None:
         spec["feuille"] = args.feuille
-    spec["geometrie"] = geo or _geometrie_pk(df, det["pk"]) or {"lat": "A_REMPLIR", "lon": "A_REMPLIR"}
+    spec["geometrie"] = (
+        geo or _geometrie_pk(df, det["pk"]) or {"lat": "A_REMPLIR", "lon": "A_REMPLIR"}
+    )
     cols_geo = set(geo.values()) if geo else set()
     if "pk" in spec["geometrie"]:
         cols_geo = {v for k, v in spec["geometrie"]["pk"].items() if k != "unite_pk"}
@@ -279,7 +284,9 @@ def cmd_init_spec(args) -> None:
             "code ligne, le script ne peut pas le cartographier."
         )
     if det["pk"] and geo is None and "pk" not in spec["geometrie"]:
-        print(f"Colonnes PK repérées : {det['pk']} (code ligne introuvable : demander à l'utilisateur).")
+        print(
+            f"Colonnes PK repérées : {det['pk']} (code ligne introuvable : demander à l'utilisateur)."
+        )
 
 
 # --------------------------------------------------------------------------- verify
@@ -368,14 +375,18 @@ def _geodataframe_pk(df, geo: dict):
     try:
         from cartes_builder import ajoute_geo
     except ImportError:
-        sys.exit("Erreur : le module de géolocalisation (cartes_builder) n'est pas installé (voir SKILL.md, CMD).")
+        sys.exit(
+            "Erreur : le module de géolocalisation (cartes_builder) n'est pas installé (voir SKILL.md, CMD)."
+        )
 
     pk = geo["pk"]
     ligne, deb = pk.get("ligne"), pk.get("pk_debut")
     fin = pk.get("pk_fin")
     for col in (ligne, deb):
         if not col or col not in df.columns:
-            sys.exit(f"Erreur : colonne absente du fichier : {col!r}. Colonnes : {list(df.columns)}")
+            sys.exit(
+                f"Erreur : colonne absente du fichier : {col!r}. Colonnes : {list(df.columns)}"
+            )
     if fin and fin not in df.columns:
         sys.exit(f"Erreur : colonne absente du fichier : {fin!r}. Colonnes : {list(df.columns)}")
 
@@ -444,7 +455,9 @@ def _geodataframe(df, geo: dict):
 
     def _num(col):
         if col not in df.columns:
-            sys.exit(f"Erreur : colonne absente du fichier : {col!r}. Colonnes : {list(df.columns)}")
+            sys.exit(
+                f"Erreur : colonne absente du fichier : {col!r}. Colonnes : {list(df.columns)}"
+            )
         serie = df[col]
         if not pd.api.types.is_numeric_dtype(serie):  # virgule décimale éventuelle
             serie = serie.astype(str).str.strip().str.replace(",", ".", regex=False)
@@ -490,21 +503,29 @@ def _couches_depuis_spec(spec: dict) -> tuple[list, dict]:
     for cle in ("filtres", "tooltips", "colonnes_tableau"):
         for col in spec.get(cle, []) or []:
             if col not in gdf.columns:
-                sys.exit(f"Erreur : colonne {col!r} (clé {cle!r}) absente. Colonnes : {list(gdf.columns)}")
+                sys.exit(
+                    f"Erreur : colonne {col!r} (clé {cle!r}) absente. Colonnes : {list(gdf.columns)}"
+                )
 
     nom = spec.get("nom_couche", "Données")
     tooltips = [(c, f"@{c}") for c in spec["tooltips"]] if spec.get("tooltips") else None
     est_point = gdf.geometry.geom_type.eq("Point")
     # une couche ne peut pas mélanger points et lignes (ex. PK ponctuels et tronçons)
-    parties = [(nom, gdf)] if est_point.all() or not est_point.any() else [
-        (f"{nom} (tronçons)", gdf[~est_point]),
-        (f"{nom} (points)", gdf[est_point]),
-    ]
+    parties = (
+        [(nom, gdf)]
+        if est_point.all() or not est_point.any()
+        else [
+            (f"{nom} (tronçons)", gdf[~est_point]),
+            (f"{nom} (points)", gdf[est_point]),
+        ]
+    )
     couches = [
         LayerConfig(
             name=n,
             data=g,
-            style=StyleConfig(color=spec.get("couleur", "navy"), size_or_width=spec.get("taille", 5)),
+            style=StyleConfig(
+                color=spec.get("couleur", "navy"), size_or_width=spec.get("taille", 5)
+            ),
             tooltips=tooltips,
             columns_to_show=spec.get("colonnes_tableau"),
         )
@@ -540,7 +561,9 @@ def cmd_build(args) -> None:
     noms = [lc.name for lc in couches]
     doublons = sorted({n for n in noms if noms.count(n) > 1})
     if doublons:
-        sys.exit(f"Erreur : noms de couches en double : {doublons}. Donner un 'nom_couche' distinct à chacune.")
+        sys.exit(
+            f"Erreur : noms de couches en double : {doublons}. Donner un 'nom_couche' distinct à chacune."
+        )
 
     filtres_globaux = list(spec.get("filtres", [])) if multi else []
     titre = spec.get("titre", "Carte")
@@ -548,7 +571,9 @@ def cmd_build(args) -> None:
     # on prend Esri World Gray Canvas, qui n'en demande pas.
     carte = CarteDynMulti(
         couches,
-        map_config=MapConfig(title=titre, tile_provider=spec.get("fond_de_carte", "EsriGrayCanvas")),
+        map_config=MapConfig(
+            title=titre, tile_provider=spec.get("fond_de_carte", "EsriGrayCanvas")
+        ),
         data_config=GlobalDataConfig(
             global_filters=filtres_globaux, specific_filters=filtres_specifiques
         ),

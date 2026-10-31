@@ -10,17 +10,25 @@ Contraintes : géométries Point, LineString ou MultiLineString (pas de polygone
 
 ```python
 import geopandas as gpd
-from cartes_multicouches import (CarteDynMulti, LayerConfig, StyleConfig, ColorMapping,
-                                 MapConfig, GlobalDataConfig)
+from cartes_multicouches import (
+    CarteDynMulti,
+    LayerConfig,
+    StyleConfig,
+    ColorMapping,
+    MapConfig,
+    GlobalDataConfig,
+)
 
 couche = LayerConfig(
-    name="Gares", data=gdf_points,                      # GeoDataFrame
-    style=StyleConfig(color=ColorMapping(column="categorie",
-                                         mapping={"gare": "#ff7f0e", "ville": "#1f77b4"})),
+    name="Gares",
+    data=gdf_points,  # GeoDataFrame
+    style=StyleConfig(
+        color=ColorMapping(column="categorie", mapping={"gare": "#ff7f0e", "ville": "#1f77b4"})
+    ),
     tooltips=[("Nom", "@nom")],
 )
 carte = CarteDynMulti(
-    [couche, autre_couche],                             # une couche par entrée
+    [couche, autre_couche],  # une couche par entrée
     map_config=MapConfig(title="Ma carte", tile_provider="EsriGrayCanvas"),
     data_config=GlobalDataConfig(global_filters=["categorie"]),
 )
