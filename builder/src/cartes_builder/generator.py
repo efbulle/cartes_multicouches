@@ -217,7 +217,7 @@ def _selectors_html(select: Mapping[str, Literal["xl_sheetnames", "xl_cols"] | l
 
 def _json_for_script(obj) -> str:
     """JSON insérable dans une balise <script> (neutralise '</')."""
-    return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\/")
+    return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).replace("</", r"<\/")
 
 
 def _write_asset(assets_dir: Path, stem: str, suffix: str, data: bytes) -> str:
