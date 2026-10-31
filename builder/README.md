@@ -47,6 +47,21 @@ gen_carte(
   importés par la page (`cartes_multicouches`, `pd`, `gpd`...) et les fonctions des modules
   injectés (`geoloc_modules`, par défaut `cartes_builder.geoloc.ajoute_geo`).
 
+## Configuration JSON et données complémentaires
+
+Indépendamment du parcours `macarte`, chaque page générée propose :
+
+- **« Données complémentaires »** : chargement de plusieurs fichiers xlsx/csv
+  additionnels, désignés dans la configuration par leur nom (sans extension) ;
+- **« Charger une configuration (JSON) »** : une spec interprétée par le module
+  `cartes_builder.spec` (injecté par défaut), qui construit la carte via
+  `carte_from_spec` — multi-couches, multi-fichiers et multi-référentiels,
+  sans passer par les sélecteurs. Le format est documenté en tête de
+  `src/cartes_builder/spec.py` ; les référentiels y sont déclarés par nom et
+  s'appuient sur les jeux de données de la page (`datasets` de `gen_carte`).
+
+Sans configuration chargée, le comportement des pages est inchangé.
+
 ## Deux modes
 
 | | `standalone=True` (défaut) | `standalone=False` |
@@ -76,4 +91,4 @@ restreindre la clé côté fournisseur (domaines autorisés).
 `scripts/build_demo.py` génère `docs/builder/` (applications PyScript légères et version
 autoportante) et la page d'accueil du site `docs/index.html`, avec des tuiles sans clé
 (`Esri.WorldGrayCanvas`). La carte Bokeh classique est `docs/carte.html`
-(`examples/example_gares.py`).
+(`examples/example_gares.py`.
