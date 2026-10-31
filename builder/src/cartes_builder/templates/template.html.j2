@@ -99,7 +99,9 @@
             outline-offset: 2px;
         }
 
-        #loadxl {
+        #loadxl,
+        #loadextra,
+        #loadspec {
             position: absolute;
             width: 1px;
             height: 1px;
@@ -177,6 +179,54 @@
             color: var(--text-muted);
         }
 
+        #files-list {
+            display: flex;
+            gap: 6px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+
+        #files-list li {
+            font-family: var(--font-mono);
+            font-size: 0.8em;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 3px 8px;
+            cursor: pointer;
+            background: var(--panel);
+        }
+
+        #files-list li:hover {
+            border-color: #b00020;
+            color: #b00020;
+        }
+
+        #specname-container {
+            font-family: var(--font-mono);
+            font-size: 0.8em;
+            color: var(--text);
+        }
+
+        #specname-container:empty::before {
+            content: "Aucune configuration";
+            font-family: var(--font-ui);
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        #rapport-container {
+            padding: 4px 20px;
+            font-size: 0.85em;
+            color: var(--text-muted);
+            background: var(--bg);
+        }
+
+        #rapport-container:empty {
+            display: none;
+        }
+
         .grow {
             flex-grow: 1;
             padding: 0;
@@ -231,6 +281,23 @@
                 </label>
                 <input type="file" id="loadxl" name="loadxl" accept=".xlsx" />
                 <span id="filename-container"></span>
+                <label id="extra-input-label" for="loadextra" class="btn btn--file" title="Charge des fichiers de données complémentaires (xlsx, csv) utilisables par la configuration JSON">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Données complémentaires
+                </label>
+                <input type="file" id="loadextra" name="loadextra" accept=".xlsx,.csv" multiple />
+                <ul id="files-list"></ul>
+            </div>
+        </div>
+        <div class="toolbar-group">
+            <span class="toolbar-group__label">Configuration</span>
+            <div class="toolbar-group__row">
+                <label id="spec-input-label" for="loadspec" class="btn btn--file" title="Charge une configuration JSON (optionnel) produite par un agent ou la CLI">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    Charger une configuration (JSON)
+                </label>
+                <input type="file" id="loadspec" name="loadspec" accept=".json,application/json" />
+                <span id="specname-container"></span>
             </div>
         </div>
         <div class="toolbar-group">
@@ -244,6 +311,7 @@
             <button id="exporte" class="btn btn--secondary" title="Sauvegarde sous forme de fichier html" disabled>Sauvegarder</button>
         </div>
     </header>
+    <div id="rapport-container"></div>
     <div id="myplot" class="grow">
 
     </div>
@@ -315,6 +383,11 @@ tile_provider_api_key = {{ api_key_literal }}
 
 nsel = document.querySelectorAll("select.selecteur").length
 
+# --- Données complémentaires et configuration JSON (optionnels) ---
+fichiers_charges = {}   # nom -> octets (données complémentaires, xlsx ou csv)
+spec_data = None        # configuration JSON chargée
+
+
 def clear_plot():
     div = document.getElementById("myplot")
     div.innerHTML = ""
@@ -345,14 +418,112 @@ def handle_file(event):
 
 
 
+@when("click", "#loadextra")
+def charge_extra(event):
+    input_element = document.querySelector("#loadextra")
+    input_element.click()
+    input_element.onchange = lambda e: handle_extra(e)
+
+
+def handle_extra(event):
+    files = event.target.files
+    for i in range(files.length):
+        file = files.item(i)
+        reader = window.FileReader.new()
+        reader.onload = make_extra_reader(file.name)
+        reader.readAsArrayBuffer(file)
+    event.target.value = ""
+
+
+def make_extra_reader(nom):
+    def _done(event):
+        clear_errors()
+        fichiers_charges[nom_fichier(nom)] = event.target.result.to_py()
+        affiche_fichiers()
+    return _done
+
+
+def nom_fichier(nom):
+    """Nom logique du fichier (sans extension), unique et distinct de 'principal'."""
+    base = nom.rsplit(".", 1)[0]
+    if base == "principal" or base in fichiers_charges:
+        i = 2
+        while f"{base}_{i}" in fichiers_charges:
+            i += 1
+        base = f"{base}_{i}"
+    return base
+
+
+def affiche_fichiers():
+    ul = document.getElementById("files-list")
+    ul.innerHTML = ""
+    for nom in fichiers_charges:
+        li = document.createElement("li")
+        li.textContent = f"{nom} (cliquer pour retirer)"
+        li.addEventListener("click", lambda e, n=nom: retire_fichier(n))
+        ul.append(li)
+
+
+def retire_fichier(nom):
+    del fichiers_charges[nom]
+    affiche_fichiers()
+
+
+@when("click", "#loadspec")
+def charge_spec(event):
+    input_element = document.querySelector("#loadspec")
+    input_element.click()
+    input_element.onchange = lambda e: handle_spec(e)
+
+
+def handle_spec(event):
+    file = event.target.files.item(0)
+    if file:
+        reader = window.FileReader.new()
+        reader.onload = lambda e: read_spec(e.target.result)
+        reader.readAsText(file)
+        document.getElementById("specname-container").textContent = file.name
+    event.target.value = ""
+
+
+def read_spec(texte):
+    clear_errors()
+    global spec_data
+    try:
+        spec_data = json.loads(texte)
+    except Exception as exc:
+        spec_data = None
+        raise RuntimeError(f"Configuration JSON illisible : {exc}")
+
+
 @when("click", "#cstr_carte")
 def bouton_cstr(event):
     if "file_data" not in globals():
         return
     clear_plot()
-    carte = cstr_carte()
+    carte = cstr_carte_spec() if spec_data is not None else cstr_carte()
     p_json = json.dumps(json_item(carte.layout_widget, target=ID("myplot")))
     Bokeh.embed.embed_item(JSON.parse(p_json))
+
+
+def cstr_carte_spec():
+    """Construit la carte d'après la configuration JSON (module spec.py injecté).
+
+    La configuration court-circuite mafunc et les sélecteurs ; elle peut
+    mobiliser les fichiers complémentaires et plusieurs référentiels déclarés
+    dans la spec (jeux de données de la page).
+    """
+    source = SourceFichiers(file_data, fichiers_charges)
+    referentiels = referentiels_depuis_spec(spec_data, lambda nom: globals().get(nom))
+    carte, rapport = carte_from_spec(spec_data, source, referentiels)
+    detail = " ; ".join(
+        f"{' + '.join(r['couches'])} : {r['lignes_cartographiees']} objets" for r in rapport["couches"]
+    )
+    msg = f"{rapport['lignes_cartographiees']} objets cartographiés ({detail})"
+    if rapport["lignes_sans_coordonnees"]:
+        msg += f" — {rapport['lignes_sans_coordonnees']} lignes non placées"
+    document.getElementById("rapport-container").textContent = msg
+    return carte
 
 
 def read_file(data):
@@ -391,6 +562,7 @@ def update_xlcols(event):
             sel.append(option_element)
 
 def cstr_carte():
+    document.getElementById("rapport-container").textContent = ""
     with pd.ExcelFile(BytesIO(file_data)) as xl:
         if nsel > 0:
             args = [document.getElementById(f"sel_{nid}").value for nid in range(nsel)]
@@ -406,7 +578,7 @@ def cstr_carte():
 def exporte_carte(event):
     if "file_data" not in globals():
         return
-    carte = cstr_carte()
+    carte = cstr_carte_spec() if spec_data is not None else cstr_carte()
     html = file_html(carte.layout_widget, CDN, "Carte")
     blob = window.Blob.new(["\ufeff" + html], {"type": "text/html;charset=utf-8;"})
     link = document.createElement("a")
