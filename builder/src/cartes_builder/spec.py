@@ -41,7 +41,17 @@ Format de la spec (JSON) :
       "colonnes_tableau": ["code_ligne", "valeur"],
       "filtres": ["categorie"]          # filtres propres à la couche
     }
-  ]
+  ],
+  "legende": {                          # optionnel, légende déclarative
+    "titre": "Légende",
+    "entrees": [
+      {"libelle": "A", "couleur": "#1f77b4", "forme": "line"},
+      {"libelle": "B", "couleur": "#ff7f0e", "forme": "line"}
+    ]                                   # rien ne lie ces couleurs aux couches : rester cohérent
+  },
+  "attribution": {                      # optionnel (défaut : celui de la bibliothèque)
+    "text": "@moi", "href": "https://example.com", "lines": ["Données : ..."]
+  }
 }
 
 Sans "couches", la spec elle-même décrit l'unique couche. Les noms de couches
@@ -339,6 +349,49 @@ def couches_depuis_spec(spec_couche, source, referentiels):
     return couches, rapport
 
 
+def _legend_config(spec):
+    """LegendConfig déclarative ('legende'), découplée des couches réelles.
+
+    Rien ne lie automatiquement les entrées aux couleurs des couches : c'est
+    à l'auteur de la spec de les garder cohérentes (cf. README API).
+    """
+    from cartes_multicouches import LegendConfig, LegendEntry
+
+    decl = spec.get("legende")
+    if not decl:
+        return None
+    entrees = [
+        LegendEntry(
+            label=e["libelle"],
+            color=e["couleur"],
+            shape=e.get("forme", "point"),
+            marker=e.get("marqueur", "circle"),
+            size=e.get("taille", 10),
+        )
+        for e in decl.get("entrees", [])
+    ]
+    return LegendConfig(
+        title=decl.get("titre", "Légende"),
+        entries=entrees,
+        visible_by_default=decl.get("visible", True),
+        width=decl.get("largeur"),
+    )
+
+
+def _attribution_config(spec):
+    """AttributionConfig déclarative ('attribution') ; sinon celle de la bibliothèque."""
+    from cartes_multicouches import AttributionConfig
+
+    decl = spec.get("attribution")
+    if not decl:
+        return None
+    return AttributionConfig(
+        text=decl.get("text", "@efbulle"),
+        href=decl.get("href", "https://github.com/efbulle"),
+        lines=list(decl.get("lines", [])),
+    )
+
+
 def carte_from_spec(spec, source, referentiels=None):
     """Construit la carte décrite par une spec complète (une ou plusieurs couches).
 
@@ -390,6 +443,8 @@ def carte_from_spec(spec, source, referentiels=None):
         data_config=GlobalDataConfig(
             global_filters=filtres_globaux, specific_filters=filtres_specifiques
         ),
+        legend_config=_legend_config(spec),
+        attribution_config=_attribution_config(spec),
     )
     rapport = {
         "couches": rapports,
