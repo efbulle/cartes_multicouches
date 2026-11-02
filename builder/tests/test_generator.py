@@ -47,6 +47,7 @@ def datasets(tmp_path):
 
 def _manifest(html: str) -> dict:
     m = re.search(r'id="assets-manifest">\s*(.*?)\s*</script>', html, re.DOTALL)
+    assert m is not None
     return json.loads(m.group(1))
 
 

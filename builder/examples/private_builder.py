@@ -31,7 +31,7 @@ MODULE_GEOLOC_PRIVE = Path("monprojet/geoloc.py")  # définit `ajoute_geo` pour 
 def macarte(xl, feuille, referentiel, attribution_config, tile_provider_api_key):
     # `ajoute_geo` vient du module injecté via `geoloc_modules`.
     df = pd.read_excel(xl, sheet_name=feuille)
-    gdf = ajoute_geo(  # noqa: F821
+    gdf = ajoute_geo(  # noqa: F821  # pyright: ignore[reportUndefinedVariable]
         df,
         referentiel,
         on="ligne",

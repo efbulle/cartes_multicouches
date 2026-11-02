@@ -299,6 +299,8 @@ def gen_carte(
         raise ValueError("Le code Python injecté ne doit pas contenir '</script'.")
 
     wheel_bytes = wheel_path.read_bytes()
+    assets = Path(assets_dir) if assets_dir is not None else filepath.parent / "assets"
+    rel = Path(os.path.relpath(assets, filepath.parent)).as_posix()
     if standalone:
         manifest: dict = {
             "wheel": {
@@ -308,8 +310,6 @@ def gen_carte(
             "datasets": {},
         }
     else:
-        assets = Path(assets_dir) if assets_dir is not None else filepath.parent / "assets"
-        rel = Path(os.path.relpath(assets, filepath.parent)).as_posix()
         manifest = {
             "wheel": {"name": wheel_path.name, "url": f"{rel}/{wheel_path.name}"},
             "datasets": {},
