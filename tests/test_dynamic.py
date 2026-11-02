@@ -10,6 +10,7 @@ from bokeh.models import (
     IntersectionFilter,
     Select,
     TapTool,
+    TileRenderer,
 )
 from bokeh.resources import CDN, INLINE
 from shapely.geometry import LineString, MultiLineString, Point, Polygon
@@ -874,7 +875,7 @@ def test_attribution_accepts_mailto_href() -> None:
     assert 'href="mailto:user@example.com"' in carte._signature_html()
     assert ">myname</a>" in carte._signature_html()
     assert carte._build_attribution_widget() is None
-    tile_attribution = carte.fig.renderers[0].tile_source.attribution
+    tile_attribution = cast(TileRenderer, carte.fig.renderers[0]).tile_source.attribution
     assert tile_attribution.endswith(carte._signature_html())
 
 

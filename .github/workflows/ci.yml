@@ -33,21 +33,28 @@ jobs:
           cache-dependency-glob: uv.lock
 
       - name: Install dependencies
-        run: uv sync --locked --group dev
+        run: uv sync --locked --all-packages
+
+      - name: Type check
+        run: uv run pyright
 
       - name: Lint
+        if: ${{ !cancelled() }}
         run: uv run ruff check --output-format=github .
 
       - name: Format check
+        if: ${{ !cancelled() }}
         run: uv run ruff format --check .
 
       - name: Install Chromium for smoke tests
+        if: ${{ !cancelled() }}
         run: uv run playwright install --with-deps chromium
 
       - name: Run tests
+        if: ${{ !cancelled() }}
         env:
           CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY: ${{ secrets.CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY }}
-        run: uv run pytest -ra --cov=cartes_multicouches --cov-report=term-missing
+        run: uv run pytest -ra --cov=cartes_multicouches --cov=cartes_builder --cov-report=term-missing
 
-      - name: Build package
-        run: uv build
+      - name: Build packages
+        run: uv build --all-packages

@@ -1,10 +1,12 @@
 import json
+from typing import cast
 
 import geopandas as gpd
 import pandas as pd
 import pytest
 from cartes_builder import ajoute_geo
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Point
+from shapely.geometry.base import BaseGeometry
 
 
 @pytest.fixture
@@ -30,7 +32,7 @@ def test_troncon_unite_km(tronloc):
         tron, tronloc, on="code_ligne", pk_lbls=("pkmd", "pkmf"), tronloc_pk_lbls=("pkmd", "pkmf")
     )
     assert res.crs == "EPSG:3857"
-    length = res.to_crs(2154).geometry.iloc[0].length
+    length = cast(BaseGeometry, res.to_crs(2154).geometry.iloc[0]).length
     assert length == pytest.approx(5000, rel=1e-3)
 
 
@@ -44,7 +46,7 @@ def test_marker_utilise_unite_pk(tronloc):
         tronloc_pk_lbls=("pkmd", "pkmf"),
         pk_unit_m=1000.0,
     )
-    point = res.to_crs(2154).geometry.iloc[0]
+    point = cast(Point, res.to_crs(2154).geometry.iloc[0])
     assert point.geom_type == "Point"
     assert point.x == pytest.approx(603005, abs=1)
 
