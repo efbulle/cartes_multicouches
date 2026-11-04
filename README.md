@@ -115,10 +115,10 @@ Points clés :
 ---
 
 ## Illustrations
+
 Ces captures utilisent des données de l'[Open Data SNCF](https://ressources.data.sncf.com/pages/accueil/).
 
 ![Démonstration interactive : filtres, toggle de couches, export CSV](examples/illustrations/demo_interaction.gif)
-
 
 ---
 
@@ -137,13 +137,13 @@ CarteDynMulti(
 )
 ```
 
-| Paramètre | Type | Description |
-|---|---|---|
-| `layers_config` | `list[LayerConfig]` | Une couche par entrée. Les noms doivent être uniques (sinon `ValueError`). |
-| `map_config` | `MapConfig \| None` | Paramètres de la figure et du layout. |
-| `data_config` | `GlobalDataConfig \| None` | Filtres globaux/spécifiques par couche. |
-| `legend_config` | `LegendConfig \| None` | Légende déclarative, indépendante des couches. |
-| `attribution_config` | `AttributionConfig \| None` | Signature affichée en bas à droite de la carte. |
+| Paramètre            | Type                        | Description                                                                |
+| -------------------- | --------------------------- | -------------------------------------------------------------------------- |
+| `layers_config`      | `list[LayerConfig]`         | Une couche par entrée. Les noms doivent être uniques (sinon `ValueError`). |
+| `map_config`         | `MapConfig \| None`         | Paramètres de la figure et du layout.                                      |
+| `data_config`        | `GlobalDataConfig \| None`  | Filtres globaux/spécifiques par couche.                                    |
+| `legend_config`      | `LegendConfig \| None`      | Légende déclarative, indépendante des couches.                             |
+| `attribution_config` | `AttributionConfig \| None` | Signature affichée en bas à droite de la carte.                            |
 
 ### `save(filepath: str | Path, zip: bool = False, resources: Resources | ResourcesMode = CDN) -> None`
 
@@ -160,11 +160,11 @@ carte.save("output/carte.html")
 
 ### Attributs utiles après construction
 
-| Attribut | Type | Contenu |
-|---|---|---|
-| `carte.fig` | `bokeh.plotting.figure` | La figure Bokeh sous-jacente. |
-| `carte.layers` | `dict[str, LayerState]` | État interne par couche (source, filtre, renderers). |
-| `carte.layout_widget` | `bokeh.models.Row` | Layout complet (panneau gauche + carte + tables). |
+| Attribut              | Type                    | Contenu                                              |
+| --------------------- | ----------------------- | ---------------------------------------------------- |
+| `carte.fig`           | `bokeh.plotting.figure` | La figure Bokeh sous-jacente.                        |
+| `carte.layers`        | `dict[str, LayerState]` | État interne par couche (source, filtre, renderers). |
+| `carte.layout_widget` | `bokeh.models.Row`      | Layout complet (panneau gauche + carte + tables).    |
 
 ---
 
@@ -189,19 +189,19 @@ class LayerConfig:
     show_endpoints: bool = False
 ```
 
-| Champ | Description |
-|---|---|
-| `name` | Identifiant unique de la couche (utilisé dans les toggles, tables, exports). |
-| `data` | `GeoDataFrame` source. Copié et reprojeté en interne, jamais muté. |
-| `style` | Voir [`StyleConfig`](#styleconfig). |
-| `tooltips` | Paires `(libellé, "@champ")` façon Bokeh. Si `None`, les 6 premières colonnes affichables sont utilisées automatiquement. |
-| `columns_to_show` | Colonnes affichées dans la table liée (par défaut : toutes sauf `geometry` et les colonnes internes). |
-| `indicators` | Liste d'agrégats affichés en overlay (compte, somme). Voir [`LayerIndicator`](#layerindicator). |
-| `annotation` | Étiquettes textuelles sur la couche. Voir [`AnnotationConfig`](#annotationconfig). |
-| `interaction` | Contrôle des interactions par couche. Voir [`InteractionConfig`](#interactionconfig). |
-| `visible_by_default` | Visibilité initiale de la couche. |
-| `has_table` | Génère (ou non) un onglet de table de données liée à la couche. |
-| `show_endpoints` | Pour les lignes : ajoute un toggle affichant les points de début/fin de chaque tronçon. |
+| Champ                | Description                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `name`               | Identifiant unique de la couche (utilisé dans les toggles, tables, exports).                                              |
+| `data`               | `GeoDataFrame` source. Copié et reprojeté en interne, jamais muté.                                                        |
+| `style`              | Voir [`StyleConfig`](#styleconfig).                                                                                       |
+| `tooltips`           | Paires `(libellé, "@champ")` façon Bokeh. Si `None`, les 6 premières colonnes affichables sont utilisées automatiquement. |
+| `columns_to_show`    | Colonnes affichées dans la table liée (par défaut : toutes sauf `geometry` et les colonnes internes).                     |
+| `indicators`         | Liste d'agrégats affichés en overlay (compte, somme). Voir [`LayerIndicator`](#layerindicator).                           |
+| `annotation`         | Étiquettes textuelles sur la couche. Voir [`AnnotationConfig`](#annotationconfig).                                        |
+| `interaction`        | Contrôle des interactions par couche. Voir [`InteractionConfig`](#interactionconfig).                                     |
+| `visible_by_default` | Visibilité initiale de la couche.                                                                                         |
+| `has_table`          | Génère (ou non) un onglet de table de données liée à la couche.                                                           |
+| `show_endpoints`     | Pour les lignes : ajoute un toggle affichant les points de début/fin de chaque tronçon.                                   |
 
 ---
 
@@ -218,11 +218,11 @@ class InteractionConfig:
     tap: bool = True
 ```
 
-| Champ | Description |
-|---|---|
-| `hover` | Active ou non le `HoverTool` de la couche. |
+| Champ      | Description                                                                                                                   |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `hover`    | Active ou non le `HoverTool` de la couche.                                                                                    |
 | `tooltips` | Si `False`, le `HoverTool` est créé mais sans tooltip (ou avec une liste vide), ce qui supprime l’affichage des infos-bulles. |
-| `tap` | Active ou non le `TapTool` de la couche. |
+| `tap`      | Active ou non le `TapTool` de la couche.                                                                                      |
 
 Exemple :
 
@@ -258,14 +258,14 @@ class StyleConfig:
 1. **Couleur fixe** : `color="navy"`.
 2. **Nom de colonne catégorielle** : `color="status"` — une palette
    (`Category10`/`Category20` selon le nombre de valeurs distinctes) est
-    générée et appliquée automatiquement via un `CategoricalColorMapper`. Cas
-    particulier : si toutes les valeurs non nulles de la colonne sont des
-    couleurs reconnues (par exemple `"red"` et `"#ff0000"`), elles sont
-    utilisées directement comme couleurs Bokeh, sans palette catégorielle. Si
-    la colonne contient un mélange de valeurs reconnues comme couleurs et de
-    valeurs qui ne le sont pas, un `UserWarning` est émis (signale
-    probablement une faute de frappe) et la colonne entière est traitée en
-    mode catégoriel.
+   générée et appliquée automatiquement via un `CategoricalColorMapper`. Cas
+   particulier : si toutes les valeurs non nulles de la colonne sont des
+   couleurs reconnues (par exemple `"red"` et `"#ff0000"`), elles sont
+   utilisées directement comme couleurs Bokeh, sans palette catégorielle. Si
+   la colonne contient un mélange de valeurs reconnues comme couleurs et de
+   valeurs qui ne le sont pas, un `UserWarning` est émis (signale
+   probablement une faute de frappe) et la colonne entière est traitée en
+   mode catégoriel.
 3. **Mapping explicite valeur → couleur** :
    `color=ColorMapping(column="status", mapping={"ouverte": "#2ca02c", "fermée": "#d62728"})`
    — les valeurs absentes du mapping utilisent `missing_color`.
@@ -279,9 +279,9 @@ class ColorMapping:
     mapping: dict[str, str]
 ```
 
-| Champ | Description |
-|---|---|
-| `column` | Colonne du `GeoDataFrame` dont les valeurs sont converties en couleur. |
+| Champ     | Description                                                                                               |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| `column`  | Colonne du `GeoDataFrame` dont les valeurs sont converties en couleur.                                    |
 | `mapping` | `{valeur: couleur}`. Toute valeur de `column` absente de ce dict retombe sur `StyleConfig.missing_color`. |
 
 `size_or_width` contrôle la taille des marqueurs (`Point`) ou l'épaisseur
@@ -314,16 +314,16 @@ class AnnotationConfig:
     subset_column: str | None = None
 ```
 
-| Champ | Description |
-|---|---|
-| `text` | Nom de la colonne contenant le texte à afficher (obligatoire). |
-| `x`, `y` | Nom de colonne pour la position de l'étiquette. Par défaut : point pour les couches `Point`, point milieu du tracé pour les lignes (calculé automatiquement, colonnes internes `COL_ANN_X`/`COL_ANN_Y`). |
-| `x_offset`, `y_offset` | **Nombre** → offset identique pour toute la couche. **Nom de colonne** → offset différent par étiquette. Toujours en pixels écran (stable quel que soit le zoom). |
-| `text_align`, `text_font_size`, `text_color` | Style du texte. |
-| `background_fill_color`, `border_line_color` | Fond et bordure de l'étiquette ; `None` pour désactiver. |
-| `padding` | Marge interne de la boîte d'étiquette, en pixels. |
-| `text_args` | Kwargs supplémentaires passés tels quels au glyph `Text` de Bokeh (prioritaires sur les champs ci-dessus). Les retours à la ligne dans les valeurs de texte sont pris en charge, par exemple via `"Clermont\nFerrand"`. |
-| `subset_column` | Nom d'une colonne booléenne du `GeoDataFrame`. Si renseigné, seules les lignes où cette colonne vaut `True` sont annotées (sous-ensemble statique). |
+| Champ                                        | Description                                                                                                                                                                                                             |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`                                       | Nom de la colonne contenant le texte à afficher (obligatoire).                                                                                                                                                          |
+| `x`, `y`                                     | Nom de colonne pour la position de l'étiquette. Par défaut : point pour les couches `Point`, point milieu du tracé pour les lignes (calculé automatiquement, colonnes internes `COL_ANN_X`/`COL_ANN_Y`).                |
+| `x_offset`, `y_offset`                       | **Nombre** → offset identique pour toute la couche. **Nom de colonne** → offset différent par étiquette. Toujours en pixels écran (stable quel que soit le zoom).                                                       |
+| `text_align`, `text_font_size`, `text_color` | Style du texte.                                                                                                                                                                                                         |
+| `background_fill_color`, `border_line_color` | Fond et bordure de l'étiquette ; `None` pour désactiver.                                                                                                                                                                |
+| `padding`                                    | Marge interne de la boîte d'étiquette, en pixels.                                                                                                                                                                       |
+| `text_args`                                  | Kwargs supplémentaires passés tels quels au glyph `Text` de Bokeh (prioritaires sur les champs ci-dessus). Les retours à la ligne dans les valeurs de texte sont pris en charge, par exemple via `"Clermont\nFerrand"`. |
+| `subset_column`                              | Nom d'une colonne booléenne du `GeoDataFrame`. Si renseigné, seules les lignes où cette colonne vaut `True` sont annotées (sous-ensemble statique).                                                                     |
 
 Une couche avec annotation ajoute automatiquement un toggle "Annotations"
 dans le panneau gauche, couplé à la visibilité de la couche elle-même.
@@ -364,10 +364,10 @@ class MapConfig:
 ```
 
 - `width=None` (par défaut) → la figure s'étire pour remplir l'espace
-disponible (`sizing_mode="stretch_both"`). Fixer `width` bascule en taille
-fixe.
+  disponible (`sizing_mode="stretch_both"`). Fixer `width` bascule en taille
+  fixe.
 - `left_panel_width=None` → largeur calculée automatiquement à partir des
-titres de filtres et de leurs options (entre 180 et 360 px).
+  titres de filtres et de leurs options (entre 180 et 360 px).
 - `tile_provider` : tout fournisseur Bokeh ou xyzservices valide (`CartoDB.Positron`,
   `OSM`, `EsriGrayCanvas`, …).
 
@@ -391,14 +391,14 @@ class GlobalDataConfig:
     specific_select_filters_order: dict[str, dict[str, list[str]]] = field(default_factory=dict)
 ```
 
-| Champ | Widget | Portée |
-|---|---|---|
-| `global_filters` | `MultiSelect` | Colonne agrégée sur **toutes** les couches qui la possèdent. |
-| `global_select_filters` | `Select` (choix unique + "Tous") | Idem, sélection unique. |
-| `specific_filters` | `MultiSelect` | `{nom_de_couche: [colonnes]}` — propre à une couche. |
-| `specific_select_filters` | `Select` | Idem, sélection unique. |
-| `multi_select_size` | — | Hauteur des `MultiSelect` en nombre d'éléments visibles. La valeur est automatiquement réduite si la liste d'options est plus courte. |
-| `*_order` | — | Ordre explicite des options (sinon tri alphabétique). Les valeurs présentes dans les données mais absentes de l'ordre explicite sont ajoutées à la suite, triées. |
+| Champ                     | Widget                           | Portée                                                                                                                                                            |
+| ------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `global_filters`          | `MultiSelect`                    | Colonne agrégée sur **toutes** les couches qui la possèdent.                                                                                                      |
+| `global_select_filters`   | `Select` (choix unique + "Tous") | Idem, sélection unique.                                                                                                                                           |
+| `specific_filters`        | `MultiSelect`                    | `{nom_de_couche: [colonnes]}` — propre à une couche.                                                                                                              |
+| `specific_select_filters` | `Select`                         | Idem, sélection unique.                                                                                                                                           |
+| `multi_select_size`       | —                                | Hauteur des `MultiSelect` en nombre d'éléments visibles. La valeur est automatiquement réduite si la liste d'options est plus courte.                             |
+| `*_order`                 | —                                | Ordre explicite des options (sinon tri alphabétique). Les valeurs présentes dans les données mais absentes de l'ordre explicite sont ajoutées à la suite, triées. |
 
 Les filtres sont appliqués côté client (CustomJS), sans round-trip serveur.
 
@@ -503,14 +503,14 @@ def carte_une_couche(
 ) -> CarteDynMulti
 ```
 
-| Paramètre | Correspond à |
-|---|---|
-| `name`, `tooltips`, `columns_to_show`, `interaction` | Champs `LayerConfig` de même nom. |
-| `color`, `alpha`, `size_or_width` | Champs `StyleConfig` de même nom. |
-| `title`, `height`, `width` | Champs `MapConfig` de même nom. |
-| `filters` | Liste de colonnes → `GlobalDataConfig.specific_filters={name: filters}`. La clé du dict est forcément `name` puisqu'il n'y a qu'une couche, donc pas besoin de la répéter. |
-| `multi_select_size` | Hauteur des `MultiSelect` en nombre d'éléments visibles. La valeur est automatiquement réduite si les options sont moins nombreuses. |
-| `legend_config` | Transmis tel quel à `CarteDynMulti` ; aucune légende n'est déduite automatiquement de `color` — à construire explicitement si besoin (voir [`LegendConfig`](#legendconfig--legendentry)). |
+| Paramètre                                            | Correspond à                                                                                                                                                                              |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`, `tooltips`, `columns_to_show`, `interaction` | Champs `LayerConfig` de même nom.                                                                                                                                                         |
+| `color`, `alpha`, `size_or_width`                    | Champs `StyleConfig` de même nom.                                                                                                                                                         |
+| `title`, `height`, `width`                           | Champs `MapConfig` de même nom.                                                                                                                                                           |
+| `filters`                                            | Liste de colonnes → `GlobalDataConfig.specific_filters={name: filters}`. La clé du dict est forcément `name` puisqu'il n'y a qu'une couche, donc pas besoin de la répéter.                |
+| `multi_select_size`                                  | Hauteur des `MultiSelect` en nombre d'éléments visibles. La valeur est automatiquement réduite si les options sont moins nombreuses.                                                      |
+| `legend_config`                                      | Transmis tel quel à `CarteDynMulti` ; aucune légende n'est déduite automatiquement de `color` — à construire explicitement si besoin (voir [`LegendConfig`](#legendconfig--legendentry)). |
 
 Pour tout paramètre non exposé ici (`missing_color`, `indicators`,
 `annotation`, `show_endpoints`, `global_filters`, `*_order`,

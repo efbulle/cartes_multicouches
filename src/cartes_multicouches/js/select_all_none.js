@@ -1,8 +1,8 @@
 // Sélectionne ou vide toutes les options d'un MultiSelect.
 // Args attendus (injectés via CustomJS.from_file) : select (MultiSelect), mode ("all" | "none").
 if (mode === "all") {
-    select.value = select.options.map((o) => Array.isArray(o) ? o[0] : o);
+  select.value = select.options.map((o) => (Array.isArray(o) ? o[0] : o));
 } else {
-    select.value = [];
+  select.value = [];
 }
 select.change.emit();

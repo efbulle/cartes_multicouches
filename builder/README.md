@@ -49,11 +49,11 @@ gen_carte(
 
 ## Deux modes
 
-| | `standalone=True` (défaut) | `standalone=False` |
-|---|---|---|
-| Wheel et données | embarqués en base64 (un seul fichier) | `assets/` chargé par `pyfetch` |
-| Serveur nécessaire | non | oui (GitHub Pages...) |
-| Jeux `private=True`, clé d'API | acceptés | **refusés** |
+|                                | `standalone=True` (défaut)            | `standalone=False`             |
+| ------------------------------ | ------------------------------------- | ------------------------------ |
+| Wheel et données               | embarqués en base64 (un seul fichier) | `assets/` chargé par `pyfetch` |
+| Serveur nécessaire             | non                                   | oui (GitHub Pages...)          |
+| Jeux `private=True`, clé d'API | acceptés                              | **refusés**                    |
 
 Les jeux « geo » sont arrondis à 0,1 m et compressés (gzip) pour limiter le poids.
 
