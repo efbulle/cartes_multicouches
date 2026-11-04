@@ -1,28 +1,62 @@
-{#
-Template Jinja2 utilisé pour générer docs/carte.html (carte d'exemple publiée sur
-GitHub Pages, la page d'accueil étant docs/index.html générée par
-scripts/build_demo.py). Ce fichier est la *source* : il est automatiquement combiné
-par Bokeh avec son template HTML par défaut (bloc "postamble" injecté dans
-le <head>) — ne pas éditer docs/carte.html directement, il est régénéré par
-examples/example_gares.py.
-
-Ajoute les balises Open Graph pour que les aperçus de partage (LinkedIn,
-etc.) affichent un titre, une description et une vignette.
-#}
-{% block postamble %}
-<meta property="og:title" content="cartes_multicouches" />
-<meta property="og:description" content="Génération de cartes Bokeh interactives multi-couches (points, lignes) à partir de GeoDataFrame, avec filtres, tables liées, indicateurs, annotations et export CSV, le tout en HTML autonome." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://efbulle.github.io/cartes_multicouches/carte.html" />
-<meta property="og:image" content="https://efbulle.github.io/cartes_multicouches/preview.png" />
-<style>
-.builder-link{position:fixed;left:8px;bottom:12px;width:184px;box-sizing:border-box;padding:10px 12px;z-index:1000;
-  font:12px/1.4 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1e2530;background:#e4edf9;border-radius:8px}
-.builder-link a{color:#2d5ba3;font-weight:600;text-decoration:none;white-space:nowrap}
-.builder-link a:hover{text-decoration:underline}
-</style>
-{% endblock %}
-{% block contents %}
-{{ super() }}
-<p class="builder-link" style="margin:0">Créez votre propre carte depuis un fichier Excel&nbsp;:<br><a href="builder/app.html">essayer le builder →</a><br><a href="./">← retour à l’accueil</a></p>
-{% endblock %}
+{# Template Jinja2 utilisé pour générer docs/carte.html (carte d'exemple publiée
+sur GitHub Pages, la page d'accueil étant docs/index.html générée par
+scripts/build_demo.py). Ce fichier est la *source* : il est automatiquement
+combiné par Bokeh avec son template HTML par défaut (bloc "postamble" injecté
+dans le
+<head>
+  ) — ne pas éditer docs/carte.html directement, il est régénéré par
+  examples/example_gares.py. Ajoute les balises Open Graph pour que les aperçus
+  de partage (LinkedIn, etc.) affichent un titre, une description et une
+  vignette. #} {% block postamble %}
+  <meta property="og:title" content="cartes_multicouches" />
+  <meta
+    property="og:description"
+    content="Génération de cartes Bokeh interactives multi-couches (points, lignes) à partir de GeoDataFrame, avec filtres, tables liées, indicateurs, annotations et export CSV, le tout en HTML autonome."
+  />
+  <meta property="og:type" content="website" />
+  <meta
+    property="og:url"
+    content="https://efbulle.github.io/cartes_multicouches/carte.html"
+  />
+  <meta
+    property="og:image"
+    content="https://efbulle.github.io/cartes_multicouches/preview.png"
+  />
+  <style>
+    .builder-link {
+      position: fixed;
+      left: 8px;
+      bottom: 12px;
+      width: 184px;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      z-index: 1000;
+      font:
+        12px/1.4 -apple-system,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+      color: #1e2530;
+      background: #e4edf9;
+      border-radius: 8px;
+    }
+    .builder-link a {
+      color: #2d5ba3;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .builder-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  {% endblock %} {% block contents %} {{ super() }}
+  <p class="builder-link" style="margin: 0">
+    Créez votre propre carte depuis un fichier Excel&nbsp;:<br /><a
+      href="builder/app.html"
+      >essayer le builder →</a
+    ><br /><a href="./">← retour à l’accueil</a>
+  </p>
+  {% endblock %}
+</head>

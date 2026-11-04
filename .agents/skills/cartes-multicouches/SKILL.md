@@ -76,16 +76,20 @@ En français, simplement : emplacement exact (ou téléchargement) du fichier ; 
 ## Exemples de dialogue
 
 **Points GPS**
+
 > Utilisateur : « Voici mes chantiers, fais-moi une carte colorée par statut. »
 > Agent : inspecte, repère `Latitude`/`Longitude` et `Statut` (4 valeurs). Construit directement sans question. « Votre carte est prête : 120 chantiers, colorés selon leur statut, avec un filtre par statut. 2 lignes sans coordonnées n'ont pas pu être placées (lignes 14 et 87). Voulez-vous aussi un filtre par année ? »
 
 **PK ferroviaires (question bloquante)**
+
 > Utilisateur : « Carte de mes interventions, j'ai la ligne et les PK. »
 > Agent : « Vos PK sont-ils exprimés en kilomètres (ex. 12,450) ou en mètres (ex. 12450) ? » — une fois la réponse reçue, construit.
 
 **Deux couches**
+
 > Utilisateur : « Mets les tronçons à ralentir et les gares sur la même carte. »
 > Agent : inspecte les deux feuilles, construit une couche « Ralentissements » (lignes) et une couche « Gares » (points), puis résume : « Deux couches, que vous pouvez afficher ou masquer séparément. »
 
 **Environnement sans exécution**
+
 > Agent : « Je ne peux pas fabriquer le fichier moi-même ici. Ouvrez https://efbulle.github.io/cartes_multicouches/, déposez votre Excel et choisissez la feuille « Tronçons » ; je vous guide à chaque étape. »
