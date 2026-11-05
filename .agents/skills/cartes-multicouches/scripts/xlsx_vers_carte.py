@@ -7,28 +7,34 @@ Sous-commandes :
   init-spec FICHIER [--feuille NOM] [--sortie spec.json]
                                    propose un brouillon de spec d'après les colonnes
   build SPEC.json                  construit la carte décrite par la spec, puis la vérifie
+  export-spec SPEC.json [--sortie config.json]
+                                   convertit une spec au format commun (celui du bouton
+                                   « Configuration » des pages cartes_builder) : à charger
+                                   dans une page, ou à relire telle quelle
+  import-spec CONFIG.json [--principal FICHIER] [--donnees NOM=FICHIER ...] [--sortie spec.json]
+                                   reprend une configuration exportée par une page : associe
+                                   "principal" et les fichiers complémentaires à des chemins
   verify CARTE.html [--couche NOM ...] [--titre T]
                                    contrôle statique du HTML produit
 
-Spec JSON (clés) :
-Plusieurs couches : mettre "couches": [ {...}, {...} ] ; chaque couche porte ses propres
-  fichier, feuille, geometrie, nom_couche (unique), couleur, taille, tooltips, colonnes_tableau
-  et filtres (propres à la couche). Au premier niveau : titre, fond_de_carte, sortie, et
-  filtres = filtres globaux, appliqués à toutes les couches qui possèdent la colonne.
-  Sans "couches", la spec elle-même décrit l'unique couche, comme ci-dessous.
+Le format de spec est celui de cartes_builder.spec (voir l'en-tête de ce module, la doc
+builder/README.md et le bouton « Configuration » des pages générées) : un seul format
+pour les agents, la CLI et le builder. La CLI y ajoute :
+  sortie       chemin du HTML                                 (défaut : carte.html)
+  fichier      chemin du .xlsx / .csv de la couche (dans une page : "principal" ou un nom)
 
+Résumé des clés (une couche, ou "couches": [ {...}, {...} ] pour plusieurs) :
   fichier      chemin du .xlsx / .csv                         (obligatoire)
   feuille      nom ou numéro de feuille (Excel)               (défaut : première)
   geometrie    voir ci-dessous                                (obligatoire)
-  nom_couche   libellé de la couche                           (défaut : "Données")
+  nom_couche   libellé de la couche, unique                   (défaut : "Données")
   couleur      nom de colonne (couleurs par catégorie) ou couleur fixe (défaut : "navy")
   taille       taille des points / épaisseur des lignes       (défaut : 5)
   tooltips     liste de colonnes affichées au survol          (défaut : 6 premières)
   colonnes_tableau  colonnes du tableau lié                   (défaut : toutes)
   filtres      liste de colonnes -> sélecteurs multiples      (défaut : aucun)
-  titre        titre de la carte
-  fond_de_carte  fournisseur de tuiles                        (défaut : "EsriGrayCanvas", sans clé API)
-  sortie       chemin du HTML                                 (défaut : carte.html)
+  Premier niveau : titre, fond_de_carte ("EsriGrayCanvas" par défaut, sans clé API), sortie,
+  filtres (globaux), referentiels, legende, attribution.
 
 geometrie :
   {"lat": "colonne", "lon": "colonne"}                        -> points
@@ -38,14 +44,20 @@ geometrie :
         -> lignes (pk_fin présent) ou points (pk_fin absent ou vide) placés par PK sur un référentiel.
         "unite_pk" : "km" (défaut) ou "m", unité des PK du fichier.
         Référentiel : par défaut le réseau ferré national public (clé code_ligne, PK en km).
-        Référentiel propre : ajouter "referentiel": "fichier.parquet|.geojson|.gpkg",
-        "referentiel_colonnes": {"ligne": ..., "pk_debut": ..., "pk_fin": ...} et
-        "referentiel_unite_pk": "km" ou "m".
+        Référentiel propre, format commun : au premier niveau
+          "referentiels": {"rfn": {"donnees": "tronloc.parquet",
+                                   "colonnes": {"ligne": ..., "pk_debut": ..., "pk_fin": ...},
+                                   "unite_pk": "km"}}
+        puis "referentiel": "rfn" dans pk (facultatif s'il n'y en a qu'un). "donnees" est un
+        chemin .parquet/.geojson/.gpkg, ou "rfn" pour le référentiel public.
+        Ancienne forme, toujours acceptée : "referentiel": "fichier.parquet",
+        "referentiel_colonnes": {...} et "referentiel_unite_pk" directement dans pk.
 """
 
 from __future__ import annotations
 
 import argparse
+import copy
 import importlib
 import importlib.metadata
 import json
@@ -58,6 +70,7 @@ from pathlib import Path
 EXT_TEXTE = {".csv", ".tsv", ".txt"}
 EXT_EXCEL = {".xlsx", ".xlsm", ".xls"}
 MAX_MODALITES = 20  # au-delà, une colonne n'est pas proposée comme catégorie
+REF_PUBLIC = "rfn"  # nom du jeu de données « référentiel public » dans une spec
 
 
 # --------------------------------------------------------------------------- lecture
@@ -328,269 +341,192 @@ def cmd_verify(args) -> None:
     print("Vérification : OK (contrôle statique ; l'affichage réel se juge dans un navigateur)")
 
 
-# --------------------------------------------------------------------------- build
+# --------------------------------------------------------------------------- spec (format commun)
+
+_EXT_REFERENTIEL = {".parquet", ".geojson", ".gpkg", ".json", ".shp"}
 
 
-def _referentiel(geo: dict):
-    """Charge le référentiel de lignes : fichier fourni, sinon référentiel public SNCF (mis en cache)."""
+def _couches_de(spec: dict) -> list:
+    return spec.get("couches", [spec])
+
+
+def _est_ancien_referentiel(pk: dict) -> bool:
+    """Ancienne forme : fichier de référentiel directement dans la géométrie PK."""
+    ref = pk.get("referentiel")
+    return "referentiel_colonnes" in pk or (
+        isinstance(ref, str) and Path(ref).suffix.lower() in _EXT_REFERENTIEL
+    )
+
+
+def _vers_format_commun(spec: dict) -> dict:
+    """Copie de la spec au format commun (referentiels nommés au premier niveau).
+
+    Convertit l'ancienne forme de la CLI (référentiel dans `geometrie.pk`) et
+    déclare le référentiel public quand une géométrie PK n'en nomme aucun.
+    Une spec déjà au format commun est retournée à l'identique.
+    """
+    from cartes_builder.spec import SpecError
+
+    if not isinstance(spec, dict):
+        raise SpecError("La spec doit être un objet JSON.")
+    spec = copy.deepcopy(spec)
+    referentiels = spec.setdefault("referentiels", {})
+    couches = _couches_de(spec)
+    for couche in couches:
+        geo = couche.get("geometrie") if isinstance(couche, dict) else None
+        if not isinstance(geo, dict) or not isinstance(geo.get("pk"), dict):
+            continue
+        pk = geo["pk"]
+        if _est_ancien_referentiel(pk):
+            chemin = pk.pop("referentiel", None)
+            if not chemin:
+                raise SpecError(
+                    "'referentiel_colonnes' sans 'referentiel' (fichier du référentiel)."
+                )
+            nom = next((n for n, d in referentiels.items() if d.get("donnees") == chemin), None)
+            if nom is None:
+                nom = f"referentiel_{len(referentiels) + 1}"
+                referentiels[nom] = {
+                    "donnees": chemin,
+                    "colonnes": pk.pop("referentiel_colonnes", None) or {},
+                    "unite_pk": pk.pop("referentiel_unite_pk", "km"),
+                }
+            pk.pop("referentiel_colonnes", None)
+            pk.pop("referentiel_unite_pk", None)
+            pk["referentiel"] = nom
+        elif not referentiels:
+            referentiels[REF_PUBLIC] = {
+                "donnees": REF_PUBLIC,
+                "colonnes": {"ligne": "code_ligne", "pk_debut": "pkmd", "pk_fin": "pkmf"},
+                "unite_pk": "km",
+            }
+    if not referentiels:
+        del spec["referentiels"]
+    return spec
+
+
+class _SourceCLI:
+    """Données de la spec : le champ `fichier` de chaque couche est un chemin."""
+
+    def feuille(self, nom=None, feuille=None):
+        from cartes_builder.spec import SpecError
+
+        if not nom:
+            raise SpecError("Clé obligatoire manquante dans la spec : 'fichier'.")
+        return _lire(nom, feuille)
+
+
+def _charger_referentiel(donnees: str):
+    """Référentiel d'après son jeu de données : chemin de fichier, ou référentiel public."""
     import geopandas as gpd
+    from cartes_builder.spec import SpecError
 
-    unites = {"km": 1000.0, "m": 1.0}
-    chemin = geo.get("referentiel")
-    if chemin:
-        p = Path(chemin)
-        if not p.exists():
-            sys.exit(f"Erreur : référentiel introuvable : {p}")
-        ref = gpd.read_parquet(p) if p.suffix.lower() == ".parquet" else gpd.read_file(p)
-        cols = geo.get("referentiel_colonnes") or {}
-        cle, pkd, pkf = cols.get("ligne"), cols.get("pk_debut"), cols.get("pk_fin")
-        if not (cle and pkd and pkf):
-            sys.exit(
-                "Erreur : 'referentiel_colonnes' doit donner 'ligne', 'pk_debut' et 'pk_fin' "
-                f"(colonnes du référentiel : {list(ref.columns)})."
-            )
-        unite = geo.get("referentiel_unite_pk", "km")
-    else:
+    chemin = Path(donnees)
+    if chemin.exists():
+        ref = (
+            gpd.read_parquet(chemin)
+            if chemin.suffix.lower() == ".parquet"
+            else gpd.read_file(chemin)
+        )
+    elif donnees == REF_PUBLIC:
         cache = Path(tempfile.gettempdir()) / "cartes_multicouches_referentiel_rfn.parquet"
-        if cache.exists():
-            ref = gpd.read_parquet(cache)
-        else:
+        if not cache.exists():
             from cartes_builder.data import build_tronloc_file
 
             print("Téléchargement du référentiel public (une seule fois, environ une minute)...")
             build_tronloc_file(cache)
-            ref = gpd.read_parquet(cache)
-        cle, pkd, pkf, unite = "code_ligne", "pkmd", "pkmf", "km"
-    if unite not in unites:
-        sys.exit("Erreur : l'unité des PK doit être 'km' ou 'm'.")
+        ref = gpd.read_parquet(cache)
+    else:
+        raise SpecError(f"Référentiel introuvable : {chemin}")
     if ref.crs is None:
-        sys.exit("Erreur : le référentiel n'a pas de système de coordonnées (CRS).")
-    return ref, cle, pkd, pkf, unites[unite]
+        raise SpecError("Le référentiel n'a pas de système de coordonnées (CRS).")
+    return ref
 
 
-def _geodataframe_pk(df, geo: dict):
-    """Géolocalise des lignes décrites par code ligne + PK début (+ PK fin) via ajoute_geo."""
-    import pandas as pd
+def _lire_spec(chemin: str) -> dict:
+    from cartes_builder.spec import SpecError
 
+    p = Path(chemin)
+    if not p.exists():
+        raise SpecError(f"Spec introuvable : {p}")
     try:
-        from cartes_builder import ajoute_geo
-    except ImportError:
-        sys.exit(
-            "Erreur : le module de géolocalisation (cartes_builder) n'est pas installé (voir SKILL.md, CMD)."
-        )
+        return json.loads(p.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SpecError(f"Spec JSON invalide ({p}) : {exc}") from exc
 
-    pk = geo["pk"]
-    ligne, deb = pk.get("ligne"), pk.get("pk_debut")
-    fin = pk.get("pk_fin")
-    for col in (ligne, deb):
-        if not col or col not in df.columns:
-            sys.exit(
-                f"Erreur : colonne absente du fichier : {col!r}. Colonnes : {list(df.columns)}"
-            )
-    if fin and fin not in df.columns:
-        sys.exit(f"Erreur : colonne absente du fichier : {fin!r}. Colonnes : {list(df.columns)}")
 
-    unites = {"km": 1000.0, "m": 1.0}
-    unite = pk.get("unite_pk", "km")
-    if unite not in unites:
-        sys.exit("Erreur : 'unite_pk' doit être 'km' ou 'm'.")
-
-    ref, cle, ref_d, ref_f, ref_unite_m = _referentiel(pk)
-    ref = ref.rename(columns={cle: ligne, ref_d: "pkmd", ref_f: "pkmf"})
-
-    def _num(serie):
-        if not pd.api.types.is_numeric_dtype(serie):
-            serie = serie.astype(str).str.strip().str.replace(",", ".", regex=False)
-        return pd.to_numeric(serie, errors="coerce")
-
-    work = df.copy()
-    work["_pkd"] = _num(work[deb]) * unites[unite] / ref_unite_m
-    work["_pkf"] = _num(work[fin]) * unites[unite] / ref_unite_m if fin else float("nan")
-    cle_num = _num(work[ligne])
-    # le code ligne du référentiel est entier : on aligne le type quand c'est possible
-    if pd.api.types.is_integer_dtype(ref[ligne]):
-        work[ligne + "_jointure"] = cle_num.astype("Int64")
-        ref[ligne + "_jointure"] = ref[ligne].astype("Int64")
+def _ecrire_spec(spec: dict, sortie: str | None) -> None:
+    texte = json.dumps(spec, ensure_ascii=False, indent=2)
+    if sortie:
+        Path(sortie).write_text(texte, encoding="utf-8")
+        print(f"Spec écrite : {sortie}")
     else:
-        work[ligne + "_jointure"] = work[ligne].astype(str).str.strip()
-        ref[ligne + "_jointure"] = ref[ligne].astype(str).str.strip()
+        print(texte)
 
-    ok = work["_pkd"].notna() & work[ligne + "_jointure"].notna()
-    if fin:  # un PK fin manquant ou inférieur au début n'est pas un tronçon valide
-        ok &= work["_pkf"].isna() | (work["_pkf"] >= work["_pkd"])
-    n_invalides = int((~ok).sum())
-    sous = work[ok]
-    if sous.empty:
-        sys.exit("Erreur : aucune ligne n'a de code ligne et de PK exploitables.")
 
-    gdf = ajoute_geo(
-        sous[[ligne + "_jointure", "_pkd", "_pkf"]],
-        ref,
-        on=ligne + "_jointure",
-        pk_lbls=("_pkd", "_pkf"),
-        tronloc_pk_lbls=("pkmd", "pkmf"),
-        pk_unit_m=ref_unite_m,
+def cmd_export_spec(args) -> None:
+    _ecrire_spec(_vers_format_commun(_lire_spec(args.spec)), args.sortie)
+
+
+def cmd_import_spec(args) -> None:
+    """Associe les noms de fichiers d'une configuration de page à des chemins locaux."""
+    from cartes_builder.spec import SpecError
+
+    spec = _vers_format_commun(_lire_spec(args.config))
+    chemins = {}
+    if args.principal:
+        chemins["principal"] = args.principal
+    for item in args.donnees or []:
+        nom, sep, chemin = item.partition("=")
+        if not sep or not nom or not chemin:
+            raise SpecError(f"--donnees attend NOM=FICHIER, reçu : {item!r}")
+        chemins[nom] = chemin
+    for couche in _couches_de(spec):
+        nom = couche.get("fichier", "principal")
+        if nom in chemins:
+            couche["fichier"] = chemins[nom]
+    for decl in (spec.get("referentiels") or {}).values():
+        if decl.get("donnees") in chemins:
+            decl["donnees"] = chemins[decl["donnees"]]
+    manquants = sorted(
+        {
+            c.get("fichier", "principal")
+            for c in _couches_de(spec)
+            if not Path(c.get("fichier", "principal")).exists()
+        }
     )
-    gdf = gdf[["geometry"]].join(df.loc[sous.index])
-    trouve = ~gdf.geometry.isna() & ~gdf.geometry.is_empty
-    n_non_trouvees = int((~trouve).sum())
-    gdf = gdf[trouve].reset_index(drop=True)
-    if gdf.empty:
-        sys.exit(
-            "Erreur : aucune ligne n'a pu être placée sur le référentiel "
-            "(codes ligne ou unité des PK à vérifier)."
-        )
-    return gdf, n_invalides + n_non_trouvees
-
-
-def _geodataframe(df, geo: dict):
-    import geopandas as gpd
-    import pandas as pd
-    from shapely.geometry import LineString, Point
-
-    if "pk" in geo:
-        return _geodataframe_pk(df, geo)
-
-    crs = geo.get("crs", "EPSG:4326")
-
-    def _num(col):
-        if col not in df.columns:
-            sys.exit(
-                f"Erreur : colonne absente du fichier : {col!r}. Colonnes : {list(df.columns)}"
-            )
-        serie = df[col]
-        if not pd.api.types.is_numeric_dtype(serie):  # virgule décimale éventuelle
-            serie = serie.astype(str).str.strip().str.replace(",", ".", regex=False)
-        return pd.to_numeric(serie, errors="coerce")
-
-    if {"lat", "lon"} <= geo.keys():
-        lat, lon = _num(geo["lat"]), _num(geo["lon"])
-        ok = lat.notna() & lon.notna()
-        geom = [Point(x, y) if o else None for x, y, o in zip(lon, lat, ok)]
-    elif {"lat_debut", "lon_debut", "lat_fin", "lon_fin"} <= geo.keys():
-        la1, lo1 = _num(geo["lat_debut"]), _num(geo["lon_debut"])
-        la2, lo2 = _num(geo["lat_fin"]), _num(geo["lon_fin"])
-        ok = la1.notna() & lo1.notna() & la2.notna() & lo2.notna()
-        geom = [
-            LineString([(a, b), (c, d)]) if o else None
-            for a, b, c, d, o in zip(lo1, la1, lo2, la2, ok)
-        ]
-    else:
-        sys.exit(
-            "Erreur : 'geometrie' doit contenir lat+lon (points) ou "
-            "lat_debut+lon_debut+lat_fin+lon_fin (lignes)."
+    _ecrire_spec(spec, args.sortie)
+    if manquants:
+        print(
+            f"Fichiers à renseigner (--principal / --donnees NOM=FICHIER) : {manquants}",
+            file=sys.stderr,
         )
 
-    n_perdues = int((~ok).sum())
-    gdf = gpd.GeoDataFrame(df.copy(), geometry=geom, crs=crs)
-    gdf = gdf[ok].reset_index(drop=True)
-    if gdf.empty:
-        sys.exit("Erreur : aucune ligne n'a de coordonnées valides.")
-    return gdf, n_perdues
 
-
-def _couches_depuis_spec(spec: dict) -> tuple[list, dict]:
-    """Construit les LayerConfig d'une couche de la spec (deux si points et lignes sont mêlés)."""
-    from cartes_multicouches import LayerConfig, StyleConfig
-
-    for cle in ("fichier", "geometrie"):
-        if cle not in spec:
-            sys.exit(f"Erreur : clé obligatoire manquante dans la spec : {cle!r}")
-
-    df = _lire(spec["fichier"], spec.get("feuille"))
-    gdf, n_perdues = _geodataframe(df, spec["geometrie"])
-
-    for cle in ("filtres", "tooltips", "colonnes_tableau"):
-        for col in spec.get(cle, []) or []:
-            if col not in gdf.columns:
-                sys.exit(
-                    f"Erreur : colonne {col!r} (clé {cle!r}) absente. Colonnes : {list(gdf.columns)}"
-                )
-
-    nom = spec.get("nom_couche", "Données")
-    tooltips = [(c, f"@{c}") for c in spec["tooltips"]] if spec.get("tooltips") else None
-    est_point = gdf.geometry.geom_type.eq("Point")
-    # une couche ne peut pas mélanger points et lignes (ex. PK ponctuels et tronçons)
-    parties = (
-        [(nom, gdf)]
-        if est_point.all() or not est_point.any()
-        else [
-            (f"{nom} (tronçons)", gdf[~est_point]),
-            (f"{nom} (points)", gdf[est_point]),
-        ]
-    )
-    couches = [
-        LayerConfig(
-            name=n,
-            data=g,
-            style=StyleConfig(
-                color=spec.get("couleur", "navy"), size_or_width=spec.get("taille", 5)
-            ),
-            tooltips=tooltips,
-            columns_to_show=spec.get("colonnes_tableau"),
-        )
-        for n, g in parties
-    ]
-    rapport = {
-        "couches": [n for n, _ in parties],
-        "lignes_cartographiees": len(gdf),
-        "lignes_sans_coordonnees": n_perdues,
-        "geometrie": sorted(set(gdf.geometry.geom_type)),
-    }
-    return couches, rapport
+# --------------------------------------------------------------------------- build
 
 
 def cmd_build(args) -> None:
-    from cartes_multicouches import CarteDynMulti, GlobalDataConfig, MapConfig
+    from cartes_builder.spec import carte_from_spec, referentiels_depuis_spec
 
-    spec = json.loads(Path(args.spec).read_text(encoding="utf-8"))
-    multi = "couches" in spec
-    specs = spec["couches"] if multi else [spec]
-    if not specs:
-        sys.exit("Erreur : la liste 'couches' est vide.")
+    spec = _vers_format_commun(_lire_spec(args.spec))
+    referentiels = referentiels_depuis_spec(spec, _charger_referentiel)
+    carte, rapport = carte_from_spec(spec, _SourceCLI(), referentiels)
 
-    couches, rapports = [], []
-    filtres_specifiques: dict[str, list] = {}
-    for s in specs:
-        c, r = _couches_depuis_spec(s)
-        couches += c
-        rapports.append(r)
-        if s.get("filtres"):
-            for lc in c:
-                filtres_specifiques[lc.name] = s["filtres"]
-    noms = [lc.name for lc in couches]
-    doublons = sorted({n for n in noms if noms.count(n) > 1})
-    if doublons:
-        sys.exit(
-            f"Erreur : noms de couches en double : {doublons}. Donner un 'nom_couche' distinct à chacune."
-        )
-
-    filtres_globaux = list(spec.get("filtres", [])) if multi else []
-    titre = spec.get("titre", "Carte")
-    # Le fond CartoDB par défaut de la bibliothèque exige désormais une clé API :
-    # on prend Esri World Gray Canvas, qui n'en demande pas.
-    carte = CarteDynMulti(
-        couches,
-        map_config=MapConfig(
-            title=titre, tile_provider=spec.get("fond_de_carte", "EsriGrayCanvas")
-        ),
-        data_config=GlobalDataConfig(
-            global_filters=filtres_globaux, specific_filters=filtres_specifiques
-        ),
-    )
     sortie = Path(spec.get("sortie", "carte.html"))
     sortie.parent.mkdir(parents=True, exist_ok=True)
     carte.save(sortie)
 
-    problemes = _verifier_html(sortie, noms, titre)
+    noms = [n for r in rapport["couches"] for n in r["couches"]]
+    problemes = _verifier_html(sortie, noms, spec.get("titre", "Carte"))
     print(
         json.dumps(
             {
                 "sortie": str(sortie.resolve()),
                 "taille_octets": sortie.stat().st_size,
-                "couches": rapports,
-                "lignes_cartographiees": sum(r["lignes_cartographiees"] for r in rapports),
-                "lignes_sans_coordonnees": sum(r["lignes_sans_coordonnees"] for r in rapports),
+                "couches": rapport["couches"],
+                "lignes_cartographiees": rapport["lignes_cartographiees"],
+                "lignes_sans_coordonnees": rapport["lignes_sans_coordonnees"],
                 "verification": "ok" if not problemes else problemes,
             },
             ensure_ascii=False,
@@ -604,7 +540,7 @@ def cmd_build(args) -> None:
 # --------------------------------------------------------------------------- CLI
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -625,14 +561,35 @@ def main() -> None:
     pb.add_argument("spec")
     pb.set_defaults(func=cmd_build)
 
+    pe = sub.add_parser("export-spec", help="convertir une spec au format commun (page builder)")
+    pe.add_argument("spec")
+    pe.add_argument("--sortie")
+    pe.set_defaults(func=cmd_export_spec)
+
+    pm = sub.add_parser("import-spec", help="reprendre une configuration exportée par une page")
+    pm.add_argument("config")
+    pm.add_argument("--principal", help="fichier de données correspondant à « principal »")
+    pm.add_argument("--donnees", action="append", metavar="NOM=FICHIER")
+    pm.add_argument("--sortie")
+    pm.set_defaults(func=cmd_import_spec)
+
     pv = sub.add_parser("verify", help="contrôler un HTML produit")
     pv.add_argument("html")
     pv.add_argument("--couche", action="append")
     pv.add_argument("--titre")
     pv.set_defaults(func=cmd_verify)
 
-    args = p.parse_args()
-    args.func(args)
+    args = p.parse_args(argv)
+    try:
+        args.func(args)
+    except ImportError as exc:
+        if "cartes_builder" not in str(exc) and "cartes_multicouches" not in str(exc):
+            raise
+        sys.exit(f"Erreur : paquet manquant ({exc}) ; voir SKILL.md, commande CMD.")
+    except Exception as exc:
+        if type(exc).__name__ != "SpecError":
+            raise
+        sys.exit(f"Erreur : {exc}")
 
 
 if __name__ == "__main__":
