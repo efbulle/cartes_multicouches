@@ -17,9 +17,9 @@ import pytest
 from shapely.geometry import LineString
 
 pytest.importorskip("cartes_builder")
-from cartes_builder import Dataset, build_wheel, gen_carte  # noqa: E402
+from cartes_builder import Dataset, build_wheel, gen_carte
 
-from cartes_multicouches import CarteDynMulti, LayerConfig  # noqa: E402
+from cartes_multicouches import CarteDynMulti, LayerConfig
 
 pytestmark = pytest.mark.builder
 
