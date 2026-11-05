@@ -635,7 +635,10 @@ carte.save("reseau.html")
 
 Le sous-projet [`builder/`](builder/README.md) (paquet `cartes-multicouches-builder`, hors
 wheel) génère des pages HTML PyScript qui construisent une carte à partir d'un fichier Excel,
-sans serveur Python. La démonstration publique se construit avec :
+sans serveur Python. Les pages acceptent aussi une **configuration JSON** (plusieurs couches,
+plusieurs fichiers de données, plusieurs référentiels de PK) : voir
+[Configuration JSON et données complémentaires](builder/README.md#configuration-json-et-données-complémentaires).
+La démonstration publique se construit avec :
 
 ```bash
 uv run python scripts/build_demo.py   # écrit docs/index.html (accueil) et docs/builder/
