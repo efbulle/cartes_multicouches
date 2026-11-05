@@ -42,6 +42,7 @@ Sous-commandes de `CMD "$SKILL_DIR/scripts/xlsx_vers_carte.py"` :
 3. `init-spec FICHIER [--feuille NOM] --sortie spec.json` — brouillon de configuration, à relire et ajuster.
 4. `build spec.json` — construit et vérifie la carte ; rapport JSON.
 5. `verify carte.html [--couche NOM] [--titre T]` — contrôle statique.
+6. `export-spec spec.json [--sortie config.json]` / `import-spec config.json --principal FICHIER [--donnees NOM=FICHIER]` — échange avec le bouton « Configuration » des pages du constructeur (même format JSON).
 
 Les clés de la spec (une couche ou `couches: [...]` pour plusieurs) sont décrites en tête du script : `CMD "$SKILL_DIR/scripts/xlsx_vers_carte.py" --help`. Pour une carte à plusieurs couches, fais un `inspect` par fichier/feuille et une entrée par couche, avec un `nom_couche` unique ; un `filtres` au premier niveau s'applique à toutes les couches qui ont la colonne.
 
