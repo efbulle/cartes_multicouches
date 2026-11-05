@@ -266,7 +266,7 @@ def geodataframe(df, geo):
         )
 
     n_perdues = int((~ok).sum())
-    gdf = gpd.GeoDataFrame(df.copy(), geometry=geom, crs=crs)
+    gdf = gpd.GeoDataFrame(df.copy(), geometry=geom, crs=crs)  # pyright: ignore[reportArgumentType]
     gdf = gdf[ok].reset_index(drop=True)
     if gdf.empty:
         raise SpecError("Aucune ligne n'a de coordonnées valides.")
