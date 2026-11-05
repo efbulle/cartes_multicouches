@@ -198,7 +198,8 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
                 ),
                 models.WMTSTileSource(
                     url=_ESRI_GRAY_REFERENCE_URL,
-                    attribution=_ESRI_GRAY_ATTRIBUTION,
+                    # attribution portée par la source de base : sinon doublon
+                    attribution="",
                     max_zoom=_ESRI_GRAY_MAX_ZOOM,
                 ),
             ]
@@ -249,7 +250,8 @@ class CarteDynMulti(LayerBuilderMixin, UIBuilderMixin):
             # La signature rejoint la ligne d'attribution des tuiles ; des sources
             # identiques (ex. Esri) restent fusionnées par Bokeh.
             base = renderer.tile_source.attribution
-            renderer.tile_source.attribution = f"{base} · {signature}" if base else signature
+            if base:
+                renderer.tile_source.attribution = f"{base} · {signature}"
         fig.toolbar.autohide = True
         fig.axis.visible = False
         fig.grid.visible = False

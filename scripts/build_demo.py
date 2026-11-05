@@ -15,6 +15,7 @@ Aucune clé d'API n'est utilisée : les tuiles viennent d'un fournisseur sans cl
 """
 
 import argparse
+import json
 import os
 import shutil
 import sys
@@ -60,6 +61,44 @@ ATTRIBUTION = {
 SECRET_ENV_VARS = ("CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY",)
 
 SHEET = "Ma carte de test"
+SPEC_EXAMPLE = {
+    "version": 1,
+    "titre": "Ma carte de test",
+    "referentiels": {
+        "rfn": {
+            "donnees": "tronloc",
+            "colonnes": {"ligne": "code_ligne", "pk_debut": "pkmd", "pk_fin": "pkmf"},
+            "unite_pk": "km",
+        }
+    },
+    "couches": [
+        {
+            "fichier": "principal",
+            "feuille": SHEET,
+            "geometrie": {
+                "pk": {
+                    "ligne": "code_ligne",
+                    "pk_debut": "pkmd",
+                    "pk_fin": "pkmf",
+                    "unite_pk": "km",
+                    "referentiel": "rfn",
+                }
+            },
+            "nom_couche": "Tronçons",
+            "couleur": "categorie",
+            "taille": 3,
+            "tooltips": ["code_ligne", "valeur", "categorie"],
+            "filtres": ["categorie"],
+        }
+    ],
+    "legende": {
+        "titre": "Catégories",
+        "entrees": [
+            {"libelle": "A", "couleur": "#1f77b4", "forme": "line"},
+            {"libelle": "B", "couleur": "#ff7f0e", "forme": "line"},
+        ],
+    },
+}
 TEST_DATA = pd.DataFrame(
     [
         [830000, 0.0, 150.0, 12.5, "A"],
@@ -265,8 +304,8 @@ Cliquez pour ouvrir la carte interactive.</figcaption>
 <span class="go">Ouvrir la carte&nbsp;→</span></a>
 <a class="card" href="{builder_dir}/app.html"><span class="tag">Application</span>
 <h3>Studio PyScript</h3>
-<p>Importez un .xlsx, choisissez la feuille, la légende et le sélecteur, puis construisez et
-exportez la carte.</p><span class="go">Lancer le studio&nbsp;→</span></a>
+<p>Importez un .xlsx, choisissez la feuille et les colonnes filtrées — ou chargez une
+configuration JSON — puis construisez et exportez la carte.</p><span class="go">Lancer le studio&nbsp;→</span></a>
 <a class="card" href="{builder_dir}/app_simple.html"><span class="tag">Application</span>
 <h3>Version minimale</h3>
 <p>Une seule couche de tronçons géolocalisés&nbsp;: le plus court chemin de l’Excel à la carte.</p>
@@ -282,7 +321,8 @@ exportez la carte.</p><span class="go">Lancer le studio&nbsp;→</span></a>
 <li><a href="{builder_dir}/test_tron.xlsx">Téléchargez test_tron.xlsx</a> ou préparez votre fichier
 (<code>code_ligne</code>, PK début et fin en km).</li>
 <li>Ouvrez le studio et chargez le fichier. Le premier démarrage prend quelques secondes.</li>
-<li>Choisissez les paramètres puis cliquez sur &laquo;&nbsp;Construire la carte&nbsp;&raquo;.</li>
+<li>Chargez <a href="{builder_dir}/spec_exemple.json">spec_exemple.json</a> (facultatif) pour construire
+sans réglages, ou choisissez les paramètres puis cliquez sur &laquo;&nbsp;Construire la carte&nbsp;&raquo;.</li>
 <li>Sauvegardez le résultat en HTML autonome.</li>
 </ol>
 
@@ -346,6 +386,9 @@ def main() -> int:
     with pd.ExcelWriter(xlsx) as writer:
         TEST_DATA.to_excel(writer, index=False, sheet_name=SHEET)
 
+    spec_path = out / "spec_exemple.json"
+    spec_path.write_text(json.dumps(SPEC_EXAMPLE, ensure_ascii=False, indent=2), encoding="utf-8")
+
     datasets = {"tronloc": Dataset(tronloc_path), "villes": Dataset(VILLES_PATH)}
 
     common = {
@@ -358,7 +401,7 @@ def main() -> int:
         macarte_complete,
         out / "app.html",
         datasets=datasets,
-        select={"Feuille": "xl_sheetnames", "Légende": "xl_cols", "Sélecteur": "xl_cols"},
+        select={"Feuille": "xl_sheetnames", "Filtre 1": "xl_cols", "Filtre 2": "xl_cols"},
         title="Démonstration — carte de tronçons",
         **common,
     )
@@ -374,7 +417,7 @@ def main() -> int:
         macarte_complete,
         out / "standalone" / "app_standalone.html",
         datasets=datasets,
-        select={"Feuille": "xl_sheetnames", "Légende": "xl_cols", "Sélecteur": "xl_cols"},
+        select={"Feuille": "xl_sheetnames", "Filtre 1": "xl_cols", "Filtre 2": "xl_cols"},
         title="Démonstration — carte de tronçons",
         wheel_path=wheel,
         attribution_config=ATTRIBUTION,
