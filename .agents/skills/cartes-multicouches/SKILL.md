@@ -2,7 +2,10 @@
 name: cartes-multicouches
 description: Créer pour un utilisateur non-programmeur des cartes HTML interactives à partir de fichiers Excel ou CSV avec le dépôt GitHub cartes_multicouches. Convient aux points GPS, lignes définies par coordonnées, tronçons ferroviaires définis par code de ligne et PK, plusieurs couches, filtres, infobulles, tableaux. Sans agent capable d'exécuter des commandes, oriente vers le constructeur en ligne.
 license: MIT
-compatibility: "Voie 1 (constructeur en ligne) : aucun prérequis, un navigateur suffit. Voie 2 (script) : agent capable de lire/écrire des fichiers et d'exécuter des commandes, avec uv et un accès réseau."
+compatibility: >-
+  Voie 1 (constructeur en ligne) : aucun prérequis, un navigateur suffit.
+  Voie 2 (script) : agent capable de lire/écrire des fichiers et d'exécuter
+  des commandes, avec uv et un accès réseau.
 metadata:
   author: efbulle
   version: "1.1.0"
