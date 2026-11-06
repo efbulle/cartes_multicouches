@@ -64,7 +64,10 @@ Cas non couverts (légende personnalisée, indicateurs, annotations, mapping de 
 - Titre clair, noms de couches explicites et uniques.
 - Couleur fixe par défaut ; couleur par catégorie si l'utilisateur veut comparer. Pas plus de 20 modalités : sinon autre variable ou conseil demandé.
 - Filtres, infobulles et tableau n'utilisent que des colonnes présentes dans l'inspection ; les sommes, que des colonnes numériques.
-- Fond de carte sans clé API (`EsriGrayCanvas`) sauf besoin explicite et clé disponible. Ne prétends pas que le HTML fonctionne hors ligne : le fond de carte demande internet.
+- **Fond de carte (tuiles)** : par défaut, toujours un fond **sans clé API** : `EsriGrayCanvas` (`"fond_de_carte"` dans la spec ; `tile_provider` dans l'API). Ne demande rien à l'utilisateur à ce sujet.
+  - Un fond **avec clé API** (ex. `CartoDB.Positron`, qui est le défaut interne de la bibliothèque, donc à ne jamais laisser par omission) n'est utilisé que si l'utilisateur le demande explicitement **et** possède une clé. Sans clé, reste sur `EsriGrayCanvas` et explique-le.
+  - Ne demande, n'affiche et n'écris jamais une clé dans la carte, la spec ou tes réponses : elle se fournit par la variable d'environnement `CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY` (voir `api.md`).
+  - Ne prétends pas que le HTML fonctionne hors ligne : le fond de carte demande internet.
 
 ## 5. Vérifier avant de livrer
 
