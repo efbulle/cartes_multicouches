@@ -43,5 +43,5 @@ carte.save("carte.html")
 - `AnnotationConfig(text="colonne_texte", ...)` : étiquettes ; `subset_column` (colonne booléenne) restreint les lignes annotées.
 - `GlobalDataConfig` : `global_filters` / `global_select_filters` (toutes les couches possédant la colonne), `specific_filters` / `specific_select_filters` (`{nom_couche: [colonnes]}`). Filtres appliqués côté navigateur.
 - `LegendConfig(entries=[LegendEntry(label, color, shape="point"|"line")])` : légende déclarative, indépendante des couches. Garder les couleurs cohérentes à la main.
-- `MapConfig` : `title`, `height`, `width`, `tile_provider` (défaut `CartoDB.Positron`, qui exige une clé API ; `EsriGrayCanvas` n'en demande pas), `tile_provider_api_key`.
+- `MapConfig` : `title`, `height`, `width`, `tile_provider` (défaut `CartoDB.Positron`, qui exige une clé API ; `EsriGrayCanvas` n'en demande pas), `tile_provider_api_key` (ou variable d'environnement `CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY`, à préférer : ne jamais écrire la clé en dur).
 - `carte_une_couche(gdf, ...)` : raccourci une couche, mais n'expose pas `tile_provider` ; pour un fond sans clé, utiliser `CarteDynMulti` directement.
