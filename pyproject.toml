@@ -8,7 +8,7 @@ readme = "README.md"
 authors = [
     { name = "efbulle", email = "emmanuel.favrebulle@gmail.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 keywords = ["bokeh", "geopandas", "cartography", "geospatial", "interactive-map"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -16,7 +16,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: GIS",
     "Topic :: Software Development :: Libraries :: Python Modules",

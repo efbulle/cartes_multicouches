@@ -7,7 +7,7 @@ readme = "README.md"
 authors = [
     { name = "efbulle", email = "emmanuel.favrebulle@gmail.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "cartes-multicouches",
     "geopandas>=1.1.3",

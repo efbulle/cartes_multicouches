@@ -164,8 +164,8 @@ def cmd_doctor(args) -> None:
         print(f"{'OK    ' if ok else 'ECHEC '} {msg}" + (f" — {detail}" if detail else ""))
 
     v = sys.version_info
-    py_ok = v >= (3, 13)
-    ligne(py_ok, f"Python {v.major}.{v.minor}.{v.micro}", "" if py_ok else "3.13 minimum requis")
+    py_ok = v >= (3, 14)
+    ligne(py_ok, f"Python {v.major}.{v.minor}.{v.micro}", "" if py_ok else "3.14 minimum requis")
 
     uv = shutil.which("uv")
     ligne(bool(uv), "uv", uv or "absent (essayer : pip install uv)")
@@ -196,7 +196,7 @@ def cmd_doctor(args) -> None:
         print("Verdict : environnement courant prêt, lancer le script directement avec python.")
     elif uv:
         print(
-            "Verdict : utiliser uv (voir SKILL.md, commande CMD) ; il fournit Python 3.13 "
+            "Verdict : utiliser uv (voir SKILL.md, commande CMD) ; il fournit Python 3.14 "
             "et installe les paquets manquants, à condition que le réseau soit joignable."
         )
     else:
