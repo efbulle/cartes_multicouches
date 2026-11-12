@@ -113,17 +113,29 @@ def test_parcours_configuration_json(page, page_builder):
 
     page.goto(f"file://{html}")
     page.wait_for_selector("#loading", state="hidden", timeout=240_000)
+    page.evaluate("""() => {
+        const readAsText = FileReader.prototype.readAsText;
+        FileReader.prototype.readAsText = function(...args) {
+            this.addEventListener("loadend", () => { window.specReadFinished = true; }, {once: true});
+            return readAsText.apply(this, args);
+        };
+    }""")
     # Les gestionnaires PyScript se branchent au clic : passer par le sélecteur de fichier.
     for label, fichier in (("#file-input-label", xlsx), ("#spec-input-label", spec)):
         with page.expect_file_chooser() as chooser:
             page.click(label)
         chooser.value.set_files(str(fichier))
+    page.wait_for_function("() => window.specReadFinished === true", timeout=60_000)
 
     bouton = page.locator("#cstr_carte")
     page.wait_for_function("() => !document.getElementById('cstr_carte').disabled", timeout=60_000)
     bouton.click()
 
-    page.wait_for_selector("#myplot .bk-Canvas, #myplot canvas", timeout=120_000)
+    try:
+        page.wait_for_selector("#myplot .bk-Canvas, #myplot canvas", timeout=120_000)
+    except PlaywrightTimeoutError as exc:
+        rapport = page.locator("#rapport-container").inner_text()
+        raise AssertionError(f"Carte non affichée : {rapport}; erreurs JS : {erreurs_js}") from exc
     assert "Erreur" not in page.locator("#rapport-container").inner_text()
     assert page.locator("#exporte").is_enabled()
     assert not erreurs_js, f"Erreurs JS : {erreurs_js}"

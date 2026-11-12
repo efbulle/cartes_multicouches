@@ -78,7 +78,8 @@ def macarte(xl, feuille):
 
 
 gen_carte(
-    macarte, "output/carte.html",
+    macarte,
+    "output/carte.html",
     select={"Feuille": "xl_sheetnames"},
     repo_dir="../cartes_multicouches",
     pktools_wheel_path="dist/pktools-0.12.0-py3-none-any.whl",
