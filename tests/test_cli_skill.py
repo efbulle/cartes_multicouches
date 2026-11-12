@@ -2,7 +2,9 @@
 
 import importlib.util
 import json
+from collections import namedtuple
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
@@ -43,6 +45,19 @@ def donnees(tmp_path):
 def _ecrire(chemin: Path, spec: dict) -> str:
     chemin.write_text(json.dumps(spec), encoding="utf-8")
     return str(chemin)
+
+
+@pytest.mark.parametrize(("minor", "ok"), [(13, False), (14, True)])
+def test_doctor_version_python(cli, monkeypatch, capsys, minor, ok):
+    version = namedtuple("Version", "major minor micro")(3, minor, 0)
+    monkeypatch.setattr(cli, "sys", SimpleNamespace(version_info=version))
+    monkeypatch.setattr(cli.shutil, "which", lambda _: "uv")
+    monkeypatch.setattr(cli, "_joignable", lambda _: True)
+    cli.cmd_doctor(None)
+    sortie = capsys.readouterr().out
+    assert f"{'OK    ' if ok else 'ECHEC '} Python 3.{minor}.0" in sortie
+    if not ok:
+        assert "3.14 minimum requis" in sortie
 
 
 def test_build_une_couche(cli, donnees, tmp_path, capsys):

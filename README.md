@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/efbulle/cartes_multicouches/actions/workflows/ci.yml/badge.svg)](https://github.com/efbulle/cartes_multicouches/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.13%20%7C%203.14-blue.svg)](pyproject.toml)
+[![Python](https://img.shields.io/badge/python-3.14%2B-blue.svg)](pyproject.toml)
 
 Génération de cartes Bokeh interactives multi-couches (points, lignes) à partir
 de `GeoDataFrame`, avec filtres, tables liées, indicateurs, annotations et
@@ -34,7 +34,7 @@ export CSV, le tout en HTML autonome.
 
 ## Installation & import
 
-Le paquet nécessite Python 3.13 ou supérieur. Depuis une copie locale du
+Le paquet nécessite Python 3.14 ou supérieur. Depuis une copie locale du
 dépôt, installez les dépendances avec :
 
 ```bash

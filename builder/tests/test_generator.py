@@ -19,6 +19,12 @@ def macarte_cle(xl, tronloc, tile_provider_api_key):
     return tile_provider_api_key
 
 
+def macarte_pk(xl):
+    from pktools.pandas import ext_to_m  # pyright: ignore[reportMissingImports]
+
+    return ext_to_m(pd.read_excel(xl)["pk"])
+
+
 @pytest.fixture(autouse=True)
 def _sans_cle_env(monkeypatch):
     # La CI exporte la vraie clé de tuiles : les tests ne doivent pas en dépendre.
@@ -30,6 +36,14 @@ def wheel(tmp_path):
     path = tmp_path / "pkg-1.0-py3-none-any.whl"
     with zipfile.ZipFile(path, "w") as z:
         z.writestr("pkg/__init__.py", "")
+    return path
+
+
+@pytest.fixture
+def pktools_wheel(tmp_path):
+    path = tmp_path / "pktools-0.12.0-py3-none-any.whl"
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr("pktools/__init__.py", "")
     return path
 
 
@@ -67,6 +81,7 @@ def test_standalone_inline_sans_placeholder(tmp_path, wheel, datasets):
     assert 'id="sel_0"' in page
 
     manifest = _manifest(page)
+    assert "pktools_wheel" not in manifest
     assert base64.b64decode(manifest["wheel"]["b64"]) == wheel.read_bytes()
     tronloc = json.loads(gzip.decompress(base64.b64decode(manifest["datasets"]["tronloc"]["b64"])))
     assert manifest["datasets"]["tronloc"]["kind"] == "geo"
@@ -84,9 +99,58 @@ def test_pages_ecrit_assets(tmp_path, wheel, datasets):
         standalone=False,
     )
     manifest = _manifest(out.read_text(encoding="utf-8"))
+    assert "pktools_wheel" not in manifest
     assert "b64" not in manifest["wheel"]
     for spec in [manifest["wheel"], *manifest["datasets"].values()]:
         assert (out.parent / spec["url"]).is_file()
+
+
+@pytest.mark.parametrize("standalone", [True, False])
+def test_wheel_pktools_optionnel(tmp_path, wheel, pktools_wheel, standalone):
+    out = gen_carte(
+        macarte_pk,
+        tmp_path / "site" / "app.html",
+        wheel_path=wheel,
+        pktools_wheel_path=pktools_wheel,
+        standalone=standalone,
+    )
+    page = out.read_text(encoding="utf-8")
+    manifest = _manifest(page)
+    assert "from pktools.pandas import ext_to_m" in page
+    for spec, expected in (
+        (manifest["wheel"], wheel),
+        (manifest["pktools_wheel"], pktools_wheel),
+    ):
+        assert spec["name"] == expected.name
+        if standalone:
+            assert base64.b64decode(spec["b64"]) == expected.read_bytes()
+        else:
+            assert (out.parent / spec["url"]).read_bytes() == expected.read_bytes()
+
+
+def test_wheel_pktools_invalide_ou_absent(tmp_path, wheel):
+    with pytest.raises(ValueError, match="wheel pktools"):
+        gen_carte(macarte_pk, tmp_path / "a", wheel_path=wheel, pktools_wheel_path=wheel)
+    with pytest.raises(ValueError, match="invalide"):
+        gen_carte(macarte_pk, tmp_path / "a", wheel_path=wheel, pktools_wheel_path="pktools.whl")
+    with pytest.raises(FileNotFoundError):
+        gen_carte(
+            macarte_pk,
+            tmp_path / "a",
+            wheel_path=wheel,
+            pktools_wheel_path=tmp_path / "pktools-0.12.0-py3-none-any.whl",
+        )
+
+
+def test_wheels_de_meme_nom_refuses(tmp_path, pktools_wheel):
+    with pytest.raises(ValueError, match="distincts"):
+        gen_carte(
+            macarte_pk,
+            tmp_path / "a",
+            wheel_path=pktools_wheel,
+            pktools_wheel_path=pktools_wheel,
+            standalone=False,
+        )
 
 
 def test_pages_refuse_dataset_prive(tmp_path, wheel, datasets):

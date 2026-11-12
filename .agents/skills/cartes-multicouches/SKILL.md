@@ -34,7 +34,7 @@ Indique https://efbulle.github.io/cartes_multicouches/ : l'utilisateur y dépose
 
 Repère `SKILL_DIR` (dossier de ce fichier) et `REPO_DIR` (copie du dépôt `https://github.com/efbulle/cartes_multicouches`, à cloner dans l'espace de travail si absente). Utilise des chemins absolus.
 
-Le script demande Python 3.13+, souvent absent : utilise toujours `uv` depuis `REPO_DIR`. **CMD** désigne `cd "$REPO_DIR" && uv run python`. Préparation unique : `cd "$REPO_DIR" && uv sync --group dev`.
+Le script demande Python 3.14+, souvent absent : utilise toujours `uv` depuis `REPO_DIR`. **CMD** désigne `cd "$REPO_DIR" && uv run python`. Préparation unique : `cd "$REPO_DIR" && uv sync --group dev`.
 
 ## 2. Construire avec le script (voie 2)
 

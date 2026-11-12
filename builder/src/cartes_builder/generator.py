@@ -47,6 +47,7 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 from jinja2 import Environment, PackageLoader, StrictUndefined
+from packaging.utils import InvalidWheelFilename, parse_wheel_filename
 
 PYSCRIPT_VERSION = "2026.7.3"
 TILE_API_KEY_ENV = "CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY"
@@ -237,6 +238,7 @@ def gen_carte(
     geoloc_modules: Sequence[Path | str] | None = None,
     standalone: bool = True,
     wheel_path: Path | str | None = None,
+    pktools_wheel_path: Path | str | None = None,
     repo_dir: Path | str | None = None,
     attribution_config: Mapping | None = None,
     tile_provider_api_key: str | None = None,
@@ -264,6 +266,8 @@ def gen_carte(
         standalone: True pour embarquer wheel et données, False pour les charger
             depuis `assets_dir` (refuse jeux privés et clé d'API).
         wheel_path / repo_dir: wheel de cartes_multicouches, ou dépôt où le chercher.
+        pktools_wheel_path: wheel local optionnel de pktools pour les imports explicites
+            dans `mafunc` ; embarqué ou copié dans les assets selon `standalone`.
         attribution_config: arguments de `AttributionConfig` (défaut : valeurs par défaut).
         tile_provider_api_key: clé des tuiles ; sinon variable d'environnement
             `CARTES_MULTICOUCHES_TILE_PROVIDER_API_KEY`. Injectée seulement si
@@ -282,6 +286,16 @@ def gen_carte(
             raise ValueError("Indiquer `wheel_path` ou `repo_dir` (dépôt de cartes_multicouches).")
         wheel_path = find_wheel(Path(repo_dir))
     wheel_path = Path(wheel_path)
+    if pktools_wheel_path is not None:
+        pktools_wheel_path = Path(pktools_wheel_path)
+        try:
+            package_name, _, _, _ = parse_wheel_filename(pktools_wheel_path.name)
+        except InvalidWheelFilename as exc:
+            raise ValueError(f"Nom de wheel pktools invalide : {pktools_wheel_path.name}") from exc
+        if package_name != "pktools":
+            raise ValueError("`pktools_wheel_path` doit désigner un wheel pktools.")
+        if pktools_wheel_path.name == wheel_path.name:
+            raise ValueError("Les wheels cartes_multicouches et pktools doivent être distincts.")
 
     mafunc_sig = inspect.signature(mafunc)
     mafunc_tree = ast.parse(dedent(inspect.getsource(mafunc)))
@@ -315,6 +329,7 @@ def gen_carte(
         raise ValueError("Le code Python injecté ne doit pas contenir '</script'.")
 
     wheel_bytes = wheel_path.read_bytes()
+    pktools_bytes = pktools_wheel_path.read_bytes() if pktools_wheel_path is not None else None
     assets = Path(assets_dir) if assets_dir is not None else filepath.parent / "assets"
     rel = Path(os.path.relpath(assets, filepath.parent)).as_posix()
     if standalone:
@@ -332,6 +347,19 @@ def gen_carte(
         }
         assets.mkdir(parents=True, exist_ok=True)
         (assets / wheel_path.name).write_bytes(wheel_bytes)
+
+    if pktools_wheel_path is not None and pktools_bytes is not None:
+        if standalone:
+            manifest["pktools_wheel"] = {
+                "name": pktools_wheel_path.name,
+                "b64": base64.b64encode(pktools_bytes).decode("ascii"),
+            }
+        else:
+            manifest["pktools_wheel"] = {
+                "name": pktools_wheel_path.name,
+                "url": f"{rel}/{pktools_wheel_path.name}",
+            }
+            (assets / pktools_wheel_path.name).write_bytes(pktools_bytes)
 
     for name, ds in datasets.items():
         kind, data = _encode_dataset(ds)

@@ -62,6 +62,38 @@ Indépendamment du parcours `macarte`, chaque page générée propose :
 
 Sans configuration chargée, le comportement des pages est inchangé.
 
+## Conversions de PK optionnelles
+
+Pour utiliser `pktools` dans `macarte`, fournir explicitement le chemin d'une wheel
+locale compatible avec Pyodide et importer les fonctions dans `macarte` :
+
+```python
+def macarte(xl, feuille):
+    from pktools.pandas import ext_to_m
+
+    df = pd.read_excel(xl, sheet_name=feuille)
+    df["pk_m"] = ext_to_m(df["pk_externe"])
+    # Construire et retourner la carte à partir de df.
+    return ...
+
+
+gen_carte(
+    macarte,
+    "output/carte.html",
+    select={"Feuille": "xl_sheetnames"},
+    repo_dir="../cartes_multicouches",
+    pktools_wheel_path="dist/pktools-0.12.0-py3-none-any.whl",
+)
+```
+
+Le chemin `pktools_wheel_path` est distinct de `wheel_path`, réservé à
+`cartes_multicouches`. La wheel pktools est embarquée en mode autonome ou copiée
+dans les assets en mode non autonome. Sans elle, aucune installation de pktools
+n'est effectuée. L'interface `pktools.pandas` utilise pandas, déjà chargé par la
+page ; l'interface Polars n'est pas fournie. Cette option ne modifie pas le
+parcours de configuration JSON. Les erreurs de conversion sont affichées dans la
+page avec leur détail.
+
 ## Deux modes
 
 |                                | `standalone=True` (défaut)            | `standalone=False`             |
