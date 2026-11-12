@@ -9,11 +9,16 @@ Exclusion : pytest -m "not builder"
 """
 
 import json
+import os
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Thread
 
 import geopandas as gpd
 import pandas as pd
 import pytest
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from shapely.geometry import LineString
 
 pytest.importorskip("cartes_builder")
@@ -122,3 +127,83 @@ def test_parcours_configuration_json(page, page_builder):
     assert "Erreur" not in page.locator("#rapport-container").inner_text()
     assert page.locator("#exporte").is_enabled()
     assert not erreurs_js, f"Erreurs JS : {erreurs_js}"
+
+
+def _mafunc_pktools(xl, feuille):
+    from pktools.pandas import ext_to_m  # pyright: ignore[reportMissingImports]
+
+    df = pd.read_excel(xl, sheet_name=feuille)
+    metres = ext_to_m(df["pk"])
+    if metres.tolist() != [4514, 413795]:
+        raise ValueError(f"Conversion inattendue : {metres.tolist()}")
+    geo = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy([2.0, 2.1], [48.0, 48.1]), crs=4326)
+    return CarteDynMulti(layers_config=[LayerConfig(name="PK", data=geo)])
+
+
+@pytest.fixture(scope="module")
+def pktools_wheel():
+    path = os.environ.get("PKTOOLS_WHEEL")
+    if not path:
+        pytest.skip("Définir PKTOOLS_WHEEL vers une wheel locale de pktools pour ce test.")
+    return Path(path)
+
+
+@pytest.fixture(scope="module")
+def carte_wheel():
+    return build_wheel(Path(__file__).resolve().parents[1])
+
+
+@pytest.mark.parametrize("standalone", [True, False])
+def test_parcours_pktools(page, tmp_path, carte_wheel, pktools_wheel, standalone):
+    html = gen_carte(
+        _mafunc_pktools,
+        tmp_path / "app.html",
+        wheel_path=carte_wheel,
+        pktools_wheel_path=pktools_wheel,
+        select={"Feuille": "xl_sheetnames"},
+        standalone=standalone,
+    )
+    valid = tmp_path / "valid.xlsx"
+    invalid = tmp_path / "invalid.xlsx"
+    pd.DataFrame({"pk": ["4+514", "412B+795"]}).to_excel(valid, index=False)
+    pd.DataFrame({"pk": ["invalide", "412B+795"]}).to_excel(invalid, index=False)
+
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), partial(SimpleHTTPRequestHandler, directory=str(tmp_path))
+    )
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        erreurs = []
+        page.on("pageerror", lambda exc: erreurs.append(str(exc)))
+        page.on("console", lambda msg: erreurs.append(msg.text) if msg.type == "error" else None)
+        page.goto(f"http://127.0.0.1:{server.server_port}/{html.name}")
+        try:
+            page.wait_for_function("() => document.body.dataset.ready === '1'", timeout=240_000)
+        except PlaywrightTimeoutError as exc:
+            raise AssertionError(f"Initialisation impossible : {erreurs}") from exc
+        for xlsx in (valid, invalid):
+            with page.expect_file_chooser() as chooser:
+                page.click("#file-input-label")
+            chooser.value.set_files(str(xlsx))
+            if xlsx == invalid:
+                page.wait_for_function(
+                    "() => document.getElementById('myplot').innerHTML === ''", timeout=60_000
+                )
+            page.wait_for_function(
+                "() => !document.getElementById('cstr_carte').disabled", timeout=60_000
+            )
+            page.click("#cstr_carte")
+            if xlsx == valid:
+                page.wait_for_selector("#myplot .bk-Canvas, #myplot canvas", timeout=120_000)
+            else:
+                page.wait_for_function(
+                    "() => document.getElementById('rapport-container').textContent"
+                    ".includes('PK externe invalide')",
+                    timeout=60_000,
+                )
+                assert "invalide" in page.locator("#rapport-container").inner_text()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()

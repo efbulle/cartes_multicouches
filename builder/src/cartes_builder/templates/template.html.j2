@@ -355,6 +355,13 @@ with open(wheel_path, "wb") as f:
     f.write(await asset_bytes(manifest["wheel"]))
 await micropip.install(f"emfs://{wheel_path}", reinstall=True)
 
+if "pktools_wheel" in manifest:
+    pktools_wheel = manifest["pktools_wheel"]
+    pktools_path = f"/{pktools_wheel['name']}"
+    with open(pktools_path, "wb") as f:
+        f.write(await asset_bytes(pktools_wheel))
+    await micropip.install(f"emfs://{pktools_path}", reinstall=True)
+
 from cartes_multicouches import (
     AnnotationConfig,
     AttributionConfig,
@@ -564,11 +571,14 @@ def update_xlcols(event):
 def cstr_carte():
     document.getElementById("rapport-container").textContent = ""
     with pd.ExcelFile(BytesIO(file_data)) as xl:
-        if nsel > 0:
-            args = [document.getElementById(f"sel_{nid}").value for nid in range(nsel)]
-            return mafunc(xl, *args)
-        else:
+        try:
+            if nsel > 0:
+                args = [document.getElementById(f"sel_{nid}").value for nid in range(nsel)]
+                return mafunc(xl, *args)
             return mafunc(xl)
+        except Exception as exc:
+            document.getElementById("rapport-container").textContent = f"Erreur : {exc}"
+            raise
 
 
 {{ mafunc_code }}
