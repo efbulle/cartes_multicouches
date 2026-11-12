@@ -109,7 +109,7 @@ def page_builder(tmp_path_factory):
 def test_parcours_configuration_json(page, page_builder):
     html, xlsx, spec = page_builder
     erreurs_js = []
-    page.on("pageerror", lambda exc: erreurs_js.append(str(exc)))
+    page.on("pageerror", lambda exc: erreurs_js.append(exc.stack or str(exc)))
 
     page.goto(f"file://{html}")
     page.wait_for_selector("#loading", state="hidden", timeout=240_000)
