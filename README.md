@@ -665,11 +665,19 @@ uv run playwright install chromium   # binaire du navigateur, installé séparé
 uv run pre-commit install --install-hooks
 ```
 
-Les hooks Ruff s'exécutent à chaque commit. Le hook `pre-push` exécute la
-suite de tests complète. Pour lancer tous les contrôles manuellement :
+Les hooks Ruff s'exécutent à chaque commit. Le hook `pre-push` exécute les tests
+hors marqueur `builder` ; les tests de fumée du constructeur démarrent PyScript
+dans Chromium et nécessitent le réseau. Ils restent inclus dans la CI. Pour
+lancer tous les contrôles manuellement :
 
 ```bash
 uv run pre-commit run --all-files
+uv run --locked pytest
+```
+
+Pour lancer uniquement les tests exécutés automatiquement avant un push :
+
+```bash
 uv run pre-commit run pytest --hook-stage pre-push --all-files
 ```
 

@@ -2,7 +2,8 @@
 
 Génère des pages HTML [PyScript](https://pyscript.net) qui construisent des cartes
 [`cartes_multicouches`](../README.md) dans le navigateur à partir d'un fichier Excel
-(sélecteur de feuille/colonnes, bouton « Construire », export HTML de la carte).
+(sélecteur de feuille/colonnes, entrées texte facultatives, bouton « Construire »,
+export HTML de la carte).
 
 Sous-projet du dépôt `cartes_multicouches` (workspace uv), **non inclus dans son wheel**.
 Il embarque ce wheel dans les pages générées.
@@ -41,8 +42,19 @@ gen_carte(
 ```
 
 - Les paramètres finaux de `macarte` nommés comme une clé de `datasets`, `attribution_config`
-  ou `tile_provider_api_key` sont fournis par la page ; les autres reçoivent la valeur des
-  `select` (`"xl_sheetnames"`, `"xl_cols"` ou une liste de choix).
+  ou `tile_provider_api_key` sont fournis par la page ; les autres reçoivent, dans l'ordre,
+  les valeurs déclarées dans `select` (`"xl_sheetnames"`, `"xl_cols"`, `"text"` ou une liste
+  de choix). `"text"` affiche une entrée libre vide au départ ; ne la déclarez que si vous
+  souhaitez montrer ce champ. La valeur peut par exemple servir au titre :
+
+  ```python
+  def macarte(xl, titre):
+      ...
+      return CarteDynMulti(..., map_config=MapConfig(title=titre))
+
+
+  gen_carte(macarte, ..., select={"Titre de la carte": "text"})
+  ```
 - `macarte` est copiée dans la page : elle ne peut utiliser que ses arguments, les noms
   importés par la page (`cartes_multicouches`, `pd`, `gpd`...) et les fonctions des modules
   injectés (`geoloc_modules`, par défaut `cartes_builder.geoloc.ajoute_geo`).

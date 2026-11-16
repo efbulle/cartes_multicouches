@@ -1,6 +1,6 @@
 """Génération de pages HTML PyScript qui construisent des cartes cartes_multicouches.
 
-Une page générée contient un sélecteur de fichier Excel, des sélecteurs de
+Une page générée contient un sélecteur de fichier Excel, des contrôles de
 paramètres et une fonction `mafunc` (extraite du code Python de l'appelant)
 qui produit la carte dans le navigateur.
 
@@ -192,26 +192,31 @@ def _prepare_mafunc_source(mafunc, template_globals: frozenset[str] | set[str]) 
     return ast.unparse(tree)
 
 
-def _selectors_html(select: Mapping[str, Literal["xl_sheetnames", "xl_cols"] | list[str]]) -> str:
+def _selectors_html(
+    select: Mapping[str, Literal["xl_sheetnames", "xl_cols", "text"] | list[str]],
+) -> str:
     groups = []
     for nid, (key, val) in enumerate(select.items()):
-        if isinstance(val, list):
+        title = html.escape(key)
+        if val == "text":
+            control = f'<input class="selecteur" id="sel_{nid}" type="text" title="{title}">'
+        elif isinstance(val, list):
             options = "".join(
                 f'<option value="{html.escape(str(o))}">{html.escape(str(o))}</option>' for o in val
             )
-            classe = ""
+            control = f'<select class="selecteur" id="sel_{nid}" title="{title}">{options}</select>'
         elif val == "xl_sheetnames":
-            options, classe = "", "sheetname"
+            classe = "sheetname"
+            control = f'<select class="selecteur {classe}" id="sel_{nid}" title="{title}"></select>'
         elif val == "xl_cols":
-            options, classe = "", "xlcols"
+            classe = "xlcols"
+            control = f'<select class="selecteur {classe}" id="sel_{nid}" title="{title}"></select>'
         else:
             raise ValueError(f"valeur non reconnue pour selecteur : {val}")
-        title = html.escape(key)
         groups.append(
             '<div class="selecteur-group">'
             f'<label class="selecteur" for="sel_{nid}">{title}</label>'
-            f'<select class="selecteur {classe}" id="sel_{nid}" title="{title}">'
-            f"{options}</select></div>"
+            f"{control}</div>"
         )
     return "\n".join(groups)
 
@@ -234,7 +239,7 @@ def gen_carte(
     filepath: Path | str = Path("output/gen_cartes.html"),
     *,
     datasets: Mapping[str, Dataset | Path | str] | None = None,
-    select: Mapping[str, Literal["xl_sheetnames", "xl_cols"] | list[str]] | None = None,
+    select: Mapping[str, Literal["xl_sheetnames", "xl_cols", "text"] | list[str]] | None = None,
     geoloc_modules: Sequence[Path | str] | None = None,
     standalone: bool = True,
     wheel_path: Path | str | None = None,
@@ -258,7 +263,9 @@ def gen_carte(
         filepath: fichier HTML produit (suffixe forcé à .html).
         datasets: jeux de données accessibles dans `mafunc` sous le nom de leur clé ;
             les jeux "geo" peuvent aussi servir de référentiels à la configuration JSON.
-        select: sélecteurs de paramètres (un par argument de `mafunc` après `xl`).
+        select: paramètres affichés dans la page (un par argument de `mafunc` après `xl`).
+            `"text"` affiche une entrée texte ; sa valeur, vide par défaut, est transmise
+            comme les autres paramètres. Les champs absents de `select` ne sont pas affichés.
         geoloc_modules: fichiers Python injectés dans la page (fonctions utilisables
             par `mafunc`, ex. `ajoute_geo`). Par défaut :
             `[cartes_builder.geoloc, cartes_builder.spec]` — le second fournit
