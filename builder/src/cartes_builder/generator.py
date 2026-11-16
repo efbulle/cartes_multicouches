@@ -204,19 +204,13 @@ def _selectors_html(
             options = "".join(
                 f'<option value="{html.escape(str(o))}">{html.escape(str(o))}</option>' for o in val
             )
-            control = (
-                f'<select class="selecteur" id="sel_{nid}" title="{title}">{options}</select>'
-            )
+            control = f'<select class="selecteur" id="sel_{nid}" title="{title}">{options}</select>'
         elif val == "xl_sheetnames":
             classe = "sheetname"
-            control = (
-                f'<select class="selecteur {classe}" id="sel_{nid}" title="{title}"></select>'
-            )
+            control = f'<select class="selecteur {classe}" id="sel_{nid}" title="{title}"></select>'
         elif val == "xl_cols":
             classe = "xlcols"
-            control = (
-                f'<select class="selecteur {classe}" id="sel_{nid}" title="{title}"></select>'
-            )
+            control = f'<select class="selecteur {classe}" id="sel_{nid}" title="{title}"></select>'
         else:
             raise ValueError(f"valeur non reconnue pour selecteur : {val}")
         groups.append(

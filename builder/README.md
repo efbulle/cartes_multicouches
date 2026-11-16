@@ -52,6 +52,7 @@ gen_carte(
       ...
       return CarteDynMulti(..., map_config=MapConfig(title=titre))
 
+
   gen_carte(macarte, ..., select={"Titre de la carte": "text"})
   ```
 - `macarte` est copiée dans la page : elle ne peut utiliser que ses arguments, les noms
