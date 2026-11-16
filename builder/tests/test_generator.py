@@ -183,6 +183,25 @@ def macarte_sans_cle(xl, tronloc):
     return None
 
 
+def macarte_avec_titre(xl, feuille, titre):
+    return titre
+
+
+def test_champ_texte_optionnel_pour_mafunc(tmp_path, wheel):
+    out = gen_carte(
+        macarte_avec_titre,
+        tmp_path / "carte.html",
+        wheel_path=wheel,
+        select={"Feuille": "xl_sheetnames", "Titre de la carte": "text"},
+    )
+    page = out.read_text(encoding="utf-8")
+
+    assert '<label class="selecteur" for="sel_1">Titre de la carte</label>' in page
+    assert '<input class="selecteur" id="sel_1" type="text" title="Titre de la carte">' in page
+    assert 'nsel = document.querySelectorAll("select.selecteur, input.selecteur").length' in page
+    assert 'args = [document.getElementById(f"sel_{nid}").value for nid in range(nsel)]' in page
+
+
 def test_wheel_requis(tmp_path, datasets):
     with pytest.raises(ValueError, match="wheel_path"):
         gen_carte(macarte, tmp_path / "a", datasets=datasets)
